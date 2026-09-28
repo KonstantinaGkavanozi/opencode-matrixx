@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { parseJsoncSafe } from "../../../shared/jsonc-parser"
 import { getOpenCodeConfigPaths } from "../../../shared/opencode-config-dir"
 import { compareVersions } from "../../../shared/opencode-version"
@@ -7,7 +8,10 @@ import type { CheckResult, DoctorCheck } from "../types"
 
 function checkOpenCodeVersion(): string | null {
   try {
-    const result = Bun.spawnSync(["opencode", "--version"], { stdout: "pipe", stderr: "pipe" })
+    // A bare command name isn't resolved through PATHEXT on Windows (npm's shim is opencode.cmd),
+    // so spawnSync would fail even though the CLI is installed. Resolve via Bun.which first.
+    const bin = Bun.which("opencode") ?? "opencode"
+    const result = Bun.spawnSync([bin, "--version"], { stdout: "pipe", stderr: "pipe" })
     if (result.exitCode === 0) return result.stdout.toString().trim()
   } catch { void 0 }
   return null
@@ -38,8 +42,14 @@ function isMatrixxPlugin(entry: string): boolean {
 
 function validateFilePlugin(entry: string): string | null {
   if (!entry.toLowerCase().startsWith("file://")) return null
-  const filePath = entry.slice(7)
+  let filePath: string
+  try {
+    filePath = fileURLToPath(entry)
+  } catch {
+    return `file:// target malformed: ${entry} → fix: correct the URI`
+  }
   if (!existsSync(filePath)) return `file:// target not found: ${filePath} → fix: reinstall or correct path`
+  if (filePath.toLowerCase().endsWith(".js")) return null
   const distIndex = join(filePath, "dist", "index.js")
   const altIndex = join(filePath, "index.js")
   if (!existsSync(distIndex) && !existsSync(altIndex)) return `file:// target missing dist/index.js: ${filePath} → fix: run bun run build in plugin dir`
