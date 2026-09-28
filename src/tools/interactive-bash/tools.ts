@@ -1,5 +1,7 @@
 import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import { getPlatform } from "../../shared/command-translator"
 import { log } from "../../shared/logger"
+import { getTmuxUnavailableMessage } from "../../shared/tmux/tmux-compat"
 import { BLOCKED_TMUX_SUBCOMMANDS, DEFAULT_TIMEOUT_MS, INTERACTIVE_BASH_DESCRIPTION } from "./constants"
 import { getCachedTmuxPath } from "./tmux-path-resolver"
 
@@ -55,7 +57,13 @@ export const interactive_bash: ToolDefinition = tool({
   },
   execute: async (args) => {
     try {
-      const tmuxPath = getCachedTmuxPath() ?? "tmux"
+      const cachedTmuxPath = getCachedTmuxPath()
+      const unavailable = getTmuxUnavailableMessage(
+        getPlatform(),
+        cachedTmuxPath !== null || Bun.which("tmux") !== null,
+      )
+      if (unavailable) return unavailable
+      const tmuxPath = cachedTmuxPath ?? "tmux"
 
       const parts = tokenizeCommand(args.tmux_command)
 

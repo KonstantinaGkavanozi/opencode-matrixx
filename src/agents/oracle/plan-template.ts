@@ -128,7 +128,7 @@ Each TODO follows RED-GREEN-REFACTOR:
 | Type | Tool | How Agent Verifies |
 |------|------|-------------------|
 | **Frontend/UI** | Playwright (playwright skill) | Navigate, interact, assert DOM, screenshot |
-| **TUI/CLI** | interactive_bash (tmux) | Run command, send keystrokes, validate output |
+| **TUI/CLI** | interactive_bash (tmux) / terminal | Run command, send keystrokes, validate output |
 | **API/Backend** | Bash (curl/httpie) | Send requests, parse responses, assert fields |
 | **Library/Module** | Bash (bun/node REPL) | Import, call functions, compare output |
 | **Config/Infra** | Bash (shell commands) | Apply config, run state checks, validate |
@@ -361,10 +361,10 @@ Parallel Speedup: ~40% faster than sequential
 
   \\\`\\\`\\\`
   Scenario: CLI loads config and displays menu
-    Tool: interactive_bash (tmux)
+    Tool: interactive_bash (tmux) / terminal
     Preconditions: Binary built, test config at ./test.yaml
     Steps:
-      1. tmux new-session: ./my-cli --config test.yaml
+      1. terminal spawn: ./my-cli --config test.yaml
       2. Wait for: "Configuration loaded" in output (timeout: 5s)
       3. Assert: Menu items visible ("1. Create", "2. List", "3. Exit")
       4. Send keys: "3" then Enter
@@ -374,10 +374,10 @@ Parallel Speedup: ~40% faster than sequential
     Evidence: Terminal output captured
 
   Scenario: CLI handles missing config gracefully
-    Tool: interactive_bash (tmux)
+    Tool: interactive_bash (tmux) / terminal
     Preconditions: No config file at ./nonexistent.yaml
     Steps:
-      1. tmux new-session: ./my-cli --config nonexistent.yaml
+      1. terminal spawn: ./my-cli --config nonexistent.yaml
       2. Wait for: output (timeout: 3s)
       3. Assert: stderr contains "Config file not found"
       4. Assert: Process exited with code 1

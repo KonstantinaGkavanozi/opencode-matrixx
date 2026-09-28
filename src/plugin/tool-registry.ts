@@ -1,5 +1,4 @@
 import type { ToolDefinition } from "@opencode-ai/plugin"
-
 import type {
   AvailableCategory,
 } from "../agents/dynamic-agent-prompt-builder"
@@ -43,6 +42,7 @@ import {
   discoverCommandsSync,
   interactive_bash,
 } from "../tools"
+import { createTerminalTool } from "../tools/terminal"
 import type { SkillContext } from "./skill-context"
 import {
   isConstructAgentEnabled,
@@ -62,7 +62,7 @@ export type ToolRegistryResult = {
 export function createToolRegistry(args: {
   ctx: PluginContext
   pluginConfig: MatrixxConfig
-  managers: Pick<Managers, "backgroundManager" | "tmuxSessionManager">
+  managers: Pick<Managers, "backgroundManager" | "tmuxSessionManager" | "terminalService" | "terminalPresentation">
   skillContext: SkillContext
   availableCategories: AvailableCategory[]
 }): ToolRegistryResult {
@@ -173,6 +173,7 @@ export function createToolRegistry(args: {
 
   const allTools: Record<string, ToolDefinition> = {
     ...builtinTools,
+    ...(managers.terminalService && managers.terminalPresentation ? { terminal: createTerminalTool(managers.terminalService, managers.terminalPresentation) } : {}),
     ...createGrepTools(ctx),
     ...createGithubSearchTools(ctx),
     ...createGlobTools(ctx),
