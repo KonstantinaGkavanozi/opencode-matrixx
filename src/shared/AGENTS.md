@@ -57,6 +57,19 @@ shared/
     └── tmux-utils/            # Pane spawn, close, replace, layout, health
 ```
 
+## CROSS-PLATFORM (Linux / macOS / Windows)
+
+| Concern | Use | Notes |
+|---|---|---|
+| rm / cp / mv / mkdir | `runTranslated([...])` or `rmRf/cpR/mvFile/mkdirp` from `command-translator/` | Node `fs`, never spawned. `cp`/`mv` into an existing dir land inside it, like the real tools |
+| Zip extraction | `extractZip()` → `archive-extractor.ts` | Single source: unzip (Unix) → tar → pwsh → powershell (Windows) |
+| Python | `getCapabilities().python` | `py`/`python`/`python3` on Windows (Store `python3` stub is last), `python3`/`python` elsewhere |
+| Shell strings | `executeCommand()` (uses `detectShellType()`) | argv via `Bun.spawn`; `MATRIXX_SHELL=unix\|powershell\|cmd` overrides |
+| tmux / screen / pty | `getTmuxUnavailableMessage()`; registry marks them unsupported on win32 | Degrades to an actionable message, never a raw ENOENT |
+| Temp / cache dirs | `os.tmpdir()`, `getCacheDir()` | `data-path.ts` deliberately mirrors OpenCode's xdg-basedir (`~/.cache`, `~/.local/share` on all platforms) — do NOT switch it to `%LOCALAPPDATA%` |
+
+Testing: `test-utils/platform.ts` (`mockPlatform`, `mockCapabilities`, `restore*`) and `test-utils/fs.ts`. Tests live in `tests/**` (CI discovers only that tree). `ci.yml` also runs the cross-platform subset on `windows-latest`.
+
 ## MOST IMPORTED
 
 | Utility | Imports | Purpose |

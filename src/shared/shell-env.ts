@@ -1,4 +1,27 @@
-type ShellType = "unix" | "powershell" | "cmd"
+export type ShellType = "unix" | "powershell" | "cmd"
+
+/**
+ * Detect which shell syntax the bash tool's commands are executed with.
+ *
+ * - MATRIXX_SHELL=unix|powershell|cmd overrides detection.
+ * - Non-Windows platforms always run a Unix shell.
+ * - On Windows, a SHELL variable (set by Git Bash / MSYS / Cygwin) means a
+ *   Unix-like shell; without it OpenCode falls back to PowerShell, which does
+ *   not understand `export`. (PSModulePath is not used: Git Bash launched from
+ *   PowerShell inherits it.)
+ */
+export function detectShellType(): ShellType {
+  const override = process.env.MATRIXX_SHELL?.toLowerCase()
+  if (override === "unix" || override === "powershell" || override === "cmd") {
+    return override
+  }
+
+  if (process.platform !== "win32") {
+    return "unix"
+  }
+
+  return process.env.SHELL ? "unix" : "powershell"
+}
 
 /**
  * Shell-escape a value for use in environment variable assignment.

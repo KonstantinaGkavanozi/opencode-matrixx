@@ -1,4 +1,4 @@
-import { afterAll, beforeEach, describe, expect, mock, test } from "bun:test"
+import { afterAll, afterEach, beforeEach, describe, expect, mock, test } from "bun:test"
 import type { ToolContext } from "@opencode-ai/plugin/tool"
 
 // ---------------------------------------------------------------------------
@@ -65,6 +65,7 @@ mock.module("node:fs", () => ({
 }))
 
 import { createPdfExtractFiguresTool } from "../../../src/tools/pdf-extract-figures/tools"
+import { mockCapabilities, restoreCapabilities } from "../../../src/shared/test-utils/platform"
 
 // ---------------------------------------------------------------------------
 // Helpers
@@ -109,12 +110,15 @@ afterAll(() => {
 
 describe("pdf_extract_figures tool", () => {
   beforeEach(() => {
+    mockCapabilities({ python: "python3" })
     capturedWritePath = null
     capturedWriteContent = null
     mockFilesExist = new Set([SAMPLE_VALID_PDF])
     mockSpawnResult = { exitCode: 0, stdout: '{"images_found":0,"images":[]}', stderr: "" }
     mockSpawnSyncResults = [{ exitCode: 0 }, { exitCode: 0 }]
   })
+
+  afterEach(restoreCapabilities)
 
   // ── Factory ─────────────────────────────────────────────────────────────
 

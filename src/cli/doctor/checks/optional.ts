@@ -1,6 +1,7 @@
 import { existsSync } from "node:fs"
-import { homedir } from "node:os"
 import { join } from "node:path"
+import { getCapabilities } from "../../../shared/command-translator"
+import { getOmoOpenCodeCacheDir } from "../../../shared/data-path"
 import type { CheckResult, DoctorCheck } from "../types"
 
 type OptionalTool = { name: string; check: () => { available: boolean; version?: string } }
@@ -14,7 +15,7 @@ function spawnVersion(cmd: string, args: string[]): { available: boolean; versio
 
 function cachedCommentChecker(): { available: boolean; version?: string } {
   try {
-    const cacheDir = process.env.XDG_CACHE_HOME ? join(process.env.XDG_CACHE_HOME, "matrixx", "bin") : join(homedir(), ".cache", "matrixx", "bin")
+    const cacheDir = join(getOmoOpenCodeCacheDir(), "bin")
     const bin = process.platform === "win32" ? "comment-checker.exe" : "comment-checker"
     const p = join(cacheDir, bin)
     if (existsSync(p)) {
@@ -35,7 +36,7 @@ const BINARY_CHECKS: OptionalTool[] = [
 ]
 
 const PYTHON_CHECKS: OptionalTool[] = [
-  { name: "PyMuPDF (fitz)", check: () => spawnVersion("python3", ["-c", "import fitz; print(fitz.__version__)"]) },
+  { name: "PyMuPDF (fitz)", check: () => spawnVersion(getCapabilities().python ?? "python3", ["-c", "import fitz; print(fitz.__version__)"]) },
   { name: "Playwright (CLI)", check: () => spawnVersion("playwright", ["--version"]) },
 ]
 
@@ -49,8 +50,9 @@ export const optionalToolsCheck: DoctorCheck = {
     })
     let pythonResults: Array<{ name: string; available: boolean; version?: string }> = []
     try {
-      const pyCheck = Bun.spawnSync(["python3", "--version"], { stdout: "pipe", stderr: "pipe" })
-      if (pyCheck.exitCode === 0) pythonResults = PYTHON_CHECKS.map((t) => ({ name: t.name, ...t.check() }))
+      const python = getCapabilities().python
+      const pyCheck = python ? Bun.spawnSync([python, "--version"], { stdout: "pipe", stderr: "pipe" }) : null
+      if (pyCheck?.exitCode === 0) pythonResults = PYTHON_CHECKS.map((t) => ({ name: t.name, ...t.check() }))
       else pythonResults = PYTHON_CHECKS.map((t) => ({ name: t.name, available: false, version: undefined }))
     } catch { void 0; pythonResults = PYTHON_CHECKS.map((t) => ({ name: t.name, available: false, version: undefined })) }
     const allResults = [...binaryResults, ...pythonResults]
