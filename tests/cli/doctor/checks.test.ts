@@ -71,6 +71,7 @@ afterAll(() => {
 })
 import { homedir } from "node:os"
 import { join } from "node:path"
+import { pathToFileURL } from "node:url"
 import { pluginInstallationCheck } from "../../../src/cli/doctor/checks/plugin"
 import { configValidationCheck } from "../../../src/cli/doctor/checks/config"
 import { authCheck } from "../../../src/cli/doctor/checks/auth"
@@ -80,8 +81,8 @@ import { mcpPrerequisitesCheck } from "../../../src/cli/doctor/checks/mcp"
 import { ALL_CHECKS, getChecksByCategory, getCategories } from "../../../src/cli/doctor/checks"
 
 describe("check registry", () => {
-  test("ALL_CHECKS has 12 entries", () => {
-    expect(ALL_CHECKS.length).toBe(12)
+  test("ALL_CHECKS has 13 entries", () => {
+    expect(ALL_CHECKS.length).toBe(13)
   })
 
   test("getCategories returns 6 unique categories including integrations", () => {
@@ -100,7 +101,7 @@ describe("check registry", () => {
     expect(auth.length).toBe(1)
     expect(auth[0].name).toBe("authentication")
     const integrations = getChecksByCategory("integrations")
-    expect(integrations.length).toBe(6)
+    expect(integrations.length).toBe(7)
   })
 
   test("every check has name, category, check function", () => {
@@ -149,6 +150,33 @@ describe("pluginInstallationCheck", () => {
     const configPath = join(homedir(), ".config", "opencode", "opencode.json")
     mockFiles.add(configPath)
     mockFileContents.set(configPath, JSON.stringify({ plugin: ["opencode-matrixx"] }))
+    mockBunSpawnSyncResults = [{ exitCode: 0, stdout: "opencode 1.0.155", stderr: "" }]
+    const result = await pluginInstallationCheck.check()
+    expect(result.status).toBe("pass")
+    expect(result.message).toContain("plugin registered")
+  })
+
+  test("passes for a file:// entry pointing directly at dist/index.js (native path round-trip)", async () => {
+    const configPath = join(homedir(), ".config", "opencode", "opencode.json")
+    const pluginFile = join(homedir(), "matrixx-fixture", "dist", "index.js")
+    const fileUrl = pathToFileURL(pluginFile).href
+    mockFiles.add(configPath)
+    mockFiles.add(pluginFile)
+    mockFileContents.set(configPath, JSON.stringify({ plugin: [fileUrl] }))
+    mockBunSpawnSyncResults = [{ exitCode: 0, stdout: "opencode 1.0.155", stderr: "" }]
+    const result = await pluginInstallationCheck.check()
+    expect(result.status).toBe("pass")
+    expect(result.message).toContain("plugin registered")
+  })
+
+  test("passes for a file:// entry pointing at a plugin directory containing dist/index.js", async () => {
+    const configPath = join(homedir(), ".config", "opencode", "opencode.json")
+    const pluginDir = join(homedir(), "matrixx-fixture-dir")
+    const fileUrl = pathToFileURL(pluginDir).href
+    mockFiles.add(configPath)
+    mockFiles.add(pluginDir)
+    mockFiles.add(join(pluginDir, "dist", "index.js"))
+    mockFileContents.set(configPath, JSON.stringify({ plugin: [fileUrl] }))
     mockBunSpawnSyncResults = [{ exitCode: 0, stdout: "opencode 1.0.155", stderr: "" }]
     const result = await pluginInstallationCheck.check()
     expect(result.status).toBe("pass")
