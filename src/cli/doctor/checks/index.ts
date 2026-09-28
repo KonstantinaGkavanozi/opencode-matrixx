@@ -10,6 +10,7 @@ import { optionalToolsCheck } from "./optional"
 import { pluginInstallationCheck } from "./plugin"
 import { rtkCheck } from "./rtk"
 import { runtimeDepsCheck } from "./runtime"
+import { terminalCheck } from "./terminal"
 import { tmuxCheck } from "./tmux"
 
 export const ALL_CHECKS: DoctorCheck[] = [
@@ -23,6 +24,7 @@ export const ALL_CHECKS: DoctorCheck[] = [
   rtkCheck,
   dcpCheck,
   contextModeCheck,
+  terminalCheck,
   tmuxCheck,
   dockerCheck,
 ]
@@ -46,4 +48,5 @@ export { optionalToolsCheck } from "./optional"
 export { pluginInstallationCheck } from "./plugin"
 export { rtkCheck } from "./rtk"
 export { runtimeDepsCheck } from "./runtime"
+export { terminalCheck } from "./terminal"
 export { tmuxCheck } from "./tmux"
