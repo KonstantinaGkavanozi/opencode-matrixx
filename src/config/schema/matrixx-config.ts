@@ -32,6 +32,7 @@ import { SkillsConfigSchema } from "./skills"
 import { TaskConfigSchema } from "./task"
 import { TasksConfigSchema } from "./tasks"
 import { TddEnforcerConfigSchema } from "./tdd-enforcer"
+import { TerminalConfigSchema } from "./terminal"
 import { TmuxConfigSchema } from "./tmux"
 import { ToolGatingConfigSchema } from "./tool-gating"
 import { WebsearchConfigSchema } from "./websearch"
@@ -82,6 +83,7 @@ export const MatrixxConfigSchema = z.object({
   browser_automation_engine: BrowserAutomationConfigSchema.optional(),
   websearch: WebsearchConfigSchema.optional(),
   tmux: TmuxConfigSchema.optional(),
+  terminal: TerminalConfigSchema.optional(),
   morpheus: MorpheusConfigSchema.optional(),
   /** Assembly tool configuration — provider models for multi-model voting */
   assembly: AssemblyConfigSchema.optional(),

@@ -2,6 +2,8 @@ import type { MatrixxConfig } from "./config"
 import type { SubagentSessionCreatedEvent } from "./features/background-agent"
 import { BackgroundManager } from "./features/background-agent"
 import { initTaskToastManager } from "./features/task-toast-manager"
+import { TerminalService } from "./features/terminal-session/service"
+import { TerminalPresentation } from "./features/terminal-viewer/presentation"
 import { TmuxSessionManager } from "./features/tmux-subagent"
 import type { PluginContext, TmuxConfig } from "./plugin/types"
 import { createConfigHandler } from "./plugin-handlers"
@@ -9,6 +11,8 @@ import type { ModelCacheState } from "./plugin-state"
 import { log } from "./shared"
 
 export type Managers = {
+  terminalService?: TerminalService
+  terminalPresentation?: TerminalPresentation
   tmuxSessionManager: TmuxSessionManager
   backgroundManager: BackgroundManager
   configHandler: ReturnType<typeof createConfigHandler>
@@ -24,6 +28,8 @@ export function createManagers(args: {
   const { ctx, pluginConfig, tmuxConfig, modelCacheState, backgroundNotificationHookEnabled } = args
 
   const tmuxSessionManager = new TmuxSessionManager(ctx, tmuxConfig)
+  const terminalService = pluginConfig.terminal?.enabled ? new TerminalService(ctx.directory, pluginConfig.terminal) : undefined
+  const terminalPresentation = terminalService ? new TerminalPresentation(terminalService, ctx.serverUrl.toString()) : undefined
 
   const backgroundManager = new BackgroundManager(
     ctx,
@@ -52,6 +58,8 @@ export function createManagers(args: {
         log("[index] onSubagentSessionCreated callback completed")
       },
       onShutdown: () => {
+        terminalPresentation?.dispose()
+        void terminalService?.dispose().catch(error => log("[terminal] Shutdown failed", { error: String(error) }))
         tmuxSessionManager.cleanup().catch((error) => {
           log("[index] tmux cleanup error during shutdown:", error)
         })
@@ -74,6 +82,8 @@ export function createManagers(args: {
   })
 
   return {
+    terminalService,
+    terminalPresentation,
     tmuxSessionManager,
     backgroundManager,
     configHandler,

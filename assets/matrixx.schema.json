@@ -4958,6 +4958,55 @@
       ],
       "additionalProperties": false
     },
+    "terminal": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "default": false,
+          "type": "boolean"
+        },
+        "backend": {
+          "default": "auto",
+          "type": "string",
+          "enum": [
+            "auto",
+            "conpty",
+            "pty"
+          ]
+        },
+        "max_sessions": {
+          "default": 8,
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 32
+        },
+        "output_buffer_bytes": {
+          "default": 262144,
+          "type": "integer",
+          "minimum": 4096,
+          "maximum": 4194304
+        },
+        "idle_timeout_ms": {
+          "default": 1800000,
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 86400000
+        },
+        "viewer": {
+          "default": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "enabled",
+        "backend",
+        "max_sessions",
+        "output_buffer_bytes",
+        "idle_timeout_ms",
+        "viewer"
+      ],
+      "additionalProperties": false
+    },
     "morpheus": {
       "type": "object",
       "properties": {
