@@ -3,6 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
 import { log } from "../../shared"
+import { getCapabilities } from "../../shared/command-translator"
 
 const PYTHON_SCRIPT = `#!/usr/bin/env python3
 import sys
@@ -79,18 +80,20 @@ if __name__ == "__main__":
     extract_figures(**args)
 `
 
-function ensurePythonAvailable(): string | null {
+const PYTHON_MISSING = "Python3 is not available in PATH. Install Python 3.8+ to use this tool."
+
+function ensurePythonAvailable(python: string | null): string | null {
+  if (!python) return PYTHON_MISSING
+
   try {
-    const result = Bun.spawnSync(["python3", "--version"], { stdout: "pipe", stderr: "pipe" })
-    if (result.exitCode !== 0) {
-      return "Python3 is not available in PATH. Install Python 3.8+ to use this tool."
-    }
+    const result = Bun.spawnSync([python, "--version"], { stdout: "pipe", stderr: "pipe" })
+    if (result.exitCode !== 0) return PYTHON_MISSING
   } catch {
-    return "Python3 is not available in PATH. Install Python 3.8+ to use this tool."
+    return PYTHON_MISSING
   }
 
   try {
-    const result = Bun.spawnSync(["python3", "-c", "import fitz; print(fitz.__version__)"], {
+    const result = Bun.spawnSync([python, "-c", "import fitz; print(fitz.__version__)"], {
       stdout: "pipe",
       stderr: "pipe",
     })
@@ -170,9 +173,10 @@ function buildArgsPayload(args: PdfExtractFiguresArgs): string {
 }
 
 async function runExtraction(args: PdfExtractFiguresArgs): Promise<string> {
-  const pythonCheck = ensurePythonAvailable()
-  if (pythonCheck) {
-    return pythonCheck
+  const python = getCapabilities().python
+  const pythonCheck = ensurePythonAvailable(python)
+  if (pythonCheck || !python) {
+    return pythonCheck ?? PYTHON_MISSING
   }
 
   // Write Python script to temp file
@@ -189,7 +193,7 @@ async function runExtraction(args: PdfExtractFiguresArgs): Promise<string> {
   const payload = buildArgsPayload(args)
   log("[pdf_extract_figures] Running extraction", { file_path: args.file_path, payload })
 
-  const proc = Bun.spawn(["python3", scriptPath, payload], {
+  const proc = Bun.spawn([python, scriptPath, payload], {
     stdout: "pipe",
     stderr: "pipe",
   })

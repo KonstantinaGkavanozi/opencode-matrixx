@@ -1,3 +1,4 @@
+import { getCapabilities } from "../../../shared/command-translator"
 import type { CheckResult, DoctorCheck } from "../types"
 
 interface RuntimeInfo {
@@ -21,12 +22,18 @@ function checkCommand(cmd: string, arg = "--version"): string | null {
   return null
 }
 
+/** Python via the resolved launcher (`py`/`python` on Windows, `python3` elsewhere). */
+function checkPython(): string | null {
+  const python = getCapabilities().python
+  return python ? checkCommand(python, "--version") : null
+}
+
 function getRuntimeVersions(): RuntimeInfo[] {
   const runtimes: RuntimeInfo[] = [
     { name: "Bun", version: checkCommand("bun"), status: "fail" },
     { name: "Node.js", version: checkCommand("node"), status: "fail" },
     { name: "Git", version: checkCommand("git"), status: "fail" },
-    { name: "Python3", version: checkCommand("python3", "--version"), status: "fail" },
+    { name: "Python3", version: checkPython(), status: "fail" },
   ]
 
   for (const r of runtimes) {
