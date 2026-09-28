@@ -299,10 +299,10 @@ const TASK_SUBFIELD_BODIES: Record<PlanTaskSubfield, string> = {
 
   \\\`\\\`\\\`
   Scenario: CLI loads config and displays menu
-    Tool: interactive_bash (tmux)
+    Tool: interactive_bash (tmux) / terminal
     Preconditions: Binary built, test config at ./test.yaml
     Steps:
-      1. tmux new-session: ./my-cli --config test.yaml
+      1. terminal spawn: ./my-cli --config test.yaml
       2. Wait for: "Configuration loaded" in output (timeout: 5s)
       3. Assert: Menu items visible ("1. Create", "2. List", "3. Exit")
       4. Send keys: "3" then Enter
@@ -312,10 +312,10 @@ const TASK_SUBFIELD_BODIES: Record<PlanTaskSubfield, string> = {
     Evidence: Terminal output captured
 
   Scenario: CLI handles missing config gracefully
-    Tool: interactive_bash (tmux)
+    Tool: interactive_bash (tmux) / terminal
     Preconditions: No config file at ./nonexistent.yaml
     Steps:
-      1. tmux new-session: ./my-cli --config nonexistent.yaml
+      1. terminal spawn: ./my-cli --config nonexistent.yaml
       2. Wait for: output (timeout: 3s)
       3. Assert: stderr contains "Config file not found"
       4. Assert: Process exited with code 1
