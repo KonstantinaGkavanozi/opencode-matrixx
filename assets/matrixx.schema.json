@@ -102,6 +102,7 @@
           "architect",
           "cipher",
           "sentinel",
+          "cyclopt",
           "sati",
           "bdd-contract"
         ]
@@ -3574,6 +3575,213 @@
           },
           "additionalProperties": false
         },
+        "cyclopt": {
+          "type": "object",
+          "properties": {
+            "model": {
+              "type": "string"
+            },
+            "variant": {
+              "type": "string"
+            },
+            "category": {
+              "type": "string"
+            },
+            "skills": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "temperature": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 2
+            },
+            "top_p": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "prompt": {
+              "type": "string"
+            },
+            "prompt_append": {
+              "type": "string"
+            },
+            "tools": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {
+                "type": "boolean"
+              }
+            },
+            "disable": {
+              "type": "boolean"
+            },
+            "description": {
+              "type": "string"
+            },
+            "mode": {
+              "type": "string",
+              "enum": [
+                "subagent",
+                "primary",
+                "all"
+              ]
+            },
+            "color": {
+              "type": "string",
+              "pattern": "^#[0-9A-Fa-f]{6}$"
+            },
+            "permission": {
+              "type": "object",
+              "properties": {
+                "edit": {
+                  "type": "string",
+                  "enum": [
+                    "ask",
+                    "allow",
+                    "deny"
+                  ]
+                },
+                "bash": {
+                  "anyOf": [
+                    {
+                      "type": "string",
+                      "enum": [
+                        "ask",
+                        "allow",
+                        "deny"
+                      ]
+                    },
+                    {
+                      "type": "object",
+                      "propertyNames": {
+                        "type": "string"
+                      },
+                      "additionalProperties": {
+                        "type": "string",
+                        "enum": [
+                          "ask",
+                          "allow",
+                          "deny"
+                        ]
+                      }
+                    }
+                  ]
+                },
+                "webfetch": {
+                  "type": "string",
+                  "enum": [
+                    "ask",
+                    "allow",
+                    "deny"
+                  ]
+                },
+                "task": {
+                  "type": "string",
+                  "enum": [
+                    "ask",
+                    "allow",
+                    "deny"
+                  ]
+                },
+                "doom_loop": {
+                  "type": "string",
+                  "enum": [
+                    "ask",
+                    "allow",
+                    "deny"
+                  ]
+                },
+                "external_directory": {
+                  "type": "string",
+                  "enum": [
+                    "ask",
+                    "allow",
+                    "deny"
+                  ]
+                }
+              },
+              "additionalProperties": false
+            },
+            "maxTokens": {
+              "type": "number"
+            },
+            "thinking": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": [
+                    "enabled",
+                    "disabled"
+                  ]
+                },
+                "budgetTokens": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "type"
+              ],
+              "additionalProperties": false
+            },
+            "reasoningEffort": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high",
+                "xhigh"
+              ]
+            },
+            "textVerbosity": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
+            },
+            "providerOptions": {
+              "type": "object",
+              "propertyNames": {
+                "type": "string"
+              },
+              "additionalProperties": {}
+            },
+            "fallbackChain": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "providers": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "model": {
+                    "type": "string"
+                  },
+                  "variant": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "providers",
+                  "model"
+                ],
+                "additionalProperties": false
+              }
+            }
+          },
+          "additionalProperties": false
+        },
         "sati": {
           "type": "object",
           "properties": {
@@ -4914,6 +5122,89 @@
       },
       "additionalProperties": false
     },
+    "cyclopt": {
+      "type": "object",
+      "properties": {
+        "api_token": {
+          "type": "string",
+          "minLength": 1
+        },
+        "base_url": {
+          "default": "https://mcp-server.cyclopt.com/mcp",
+          "type": "string",
+          "format": "uri"
+        },
+        "default_analyzers": {
+          "default": [
+            "metrics",
+            "violations",
+            "sast"
+          ],
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "metrics",
+              "violations",
+              "sast",
+              "duplication",
+              "vulnerabilities"
+            ]
+          }
+        },
+        "max_file_bytes": {
+          "default": 256000,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "max_batch_files": {
+          "default": 60,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "max_scan_bytes": {
+          "default": 8000000,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "poll_interval_ms": {
+          "default": 15000,
+          "type": "integer",
+          "minimum": 10000,
+          "maximum": 9007199254740991
+        },
+        "job_timeout_ms": {
+          "default": 900000,
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "maximum": 9007199254740991
+        },
+        "allow_fix_code": {
+          "default": false,
+          "type": "boolean"
+        },
+        "exclude": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "base_url",
+        "default_analyzers",
+        "max_file_bytes",
+        "max_batch_files",
+        "max_scan_bytes",
+        "poll_interval_ms",
+        "job_timeout_ms",
+        "allow_fix_code"
+      ],
+      "additionalProperties": false
+    },
     "tmux": {
       "type": "object",
       "properties": {
@@ -5102,6 +5393,9 @@
           "type": "boolean"
         },
         "look_at": {
+          "type": "boolean"
+        },
+        "cyclopt_tools": {
           "type": "boolean"
         },
         "preset_tools": {

@@ -2,7 +2,7 @@
 
 ## OVERVIEW
 
-Tier 1 of two-tier MCP system: 3 built-in MCPs (2 remote HTTP + 1 local stdio).
+Tier 1 of two-tier MCP system: 3 always-on built-in MCPs (2 remote HTTP + 1 local stdio) plus the opt-in `cyclopt` remote MCP (registered only when a token is configured).
 
 **Two-Tier System**:
 1. **Built-in** (this directory): websearch, context7, document_reader
@@ -16,6 +16,8 @@ mcp/
 ├── websearch.ts       # Exa AI / Tavily web search
 ├── context7.ts        # Library documentation
 ├── document-reader.ts # Microsoft MarkItDown (PDF, DOCX, XLSX, PPTX, images)
+├── cyclopt.ts         # Cyclopt analysis platform (opt-in, bearer token from env)
+├── cyclopt-endpoint.ts # Shared base URL + token resolver (MCP AND cyclopt_scan tool)
 └── types.ts           # McpNameSchema
 ```
 
@@ -26,6 +28,7 @@ mcp/
 | websearch | remote HTTP | EXA_API_KEY (optional) / TAVILY_API_KEY (required) | Real-time web search |
 | context7 | remote HTTP | CONTEXT7_API_KEY (optional) | Library docs lookup |
 | document_reader | local stdio (`uvx`) | None | Read PDF/DOCX/XLSX/PPTX/images → Markdown |
+| cyclopt | remote HTTP | `cyclopt.api_token` (user-level config) or `CYCLOPT_API_TOKEN` env (required; skipped silently when neither is set) | Cyclopt analysis: 11 tools, async jobs. Only the analysis tools are granted to the `cyclopt` agent; `fix_code` is not |
 
 ### document_reader Tool
 

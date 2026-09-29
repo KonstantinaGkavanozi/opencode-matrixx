@@ -1,5 +1,7 @@
 import type { MatrixxConfig } from "../config/schema"
 import { context7 } from "./context7"
+import { createCycloptConfig } from "./cyclopt"
+import { hasCycloptToken } from "./cyclopt-endpoint"
 import { document_reader } from "./document-reader"
 import { isCommandAvailable, type McpCreationFailure, validateWebsearchConfig } from "./mcp-validator"
 import { createWebsearchConfig } from "./websearch"
@@ -97,6 +99,27 @@ export function createBuiltinMcps(
       )
       mcps.document_reader = DISABLED_LOCAL_STUB
     }
+  }
+
+  // Cyclopt is opt-in: without a token (config or CYCLOPT_API_TOKEN) it is skipped silently rather
+  // than recording a failure on every startup for users who do not use it.
+  if (!disabledMcps.includes("cyclopt") && hasCycloptToken(config?.cyclopt)) {
+    let cycloptConfig: BuiltinMcpConfig | undefined
+    Object.defineProperty(mcps, "cyclopt", {
+      enumerable: true,
+      configurable: true,
+      get() {
+        if (!cycloptConfig) {
+          try {
+            cycloptConfig = createCycloptConfig(config?.cyclopt)
+          } catch (err) {
+            recordFailure("cyclopt", err instanceof Error ? err.message : String(err))
+            cycloptConfig = DISABLED_REMOTE_STUB
+          }
+        }
+        return cycloptConfig
+      },
+    })
   }
 
   return { mcps, failures }

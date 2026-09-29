@@ -14,6 +14,7 @@ export const AGENT_DISPLAY_NAMES: Record<string, string> = {
   merovingian: "Merovingian (Consultation Expert)",
   operator: "operator",
   sentinel: "Sentinel (Security Auditor)",
+  cyclopt: "Cyclopt (Code Quality Analyst)",
   sati: "Sati (Frontend Specialist)",
   trinity: "trinity",
   construct: "construct",

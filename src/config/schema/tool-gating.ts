@@ -8,6 +8,8 @@ export const ToolGatingConfigSchema = z.object({
   pdf_figures: z.boolean().optional(),
   /** Multimodal look_at tool. Undefined = auto: register iff construct agent is enabled and a media file (png|jpg|jpeg|gif|webp|svg|pdf) is found. True forces registration, false forces skip. */
   look_at: z.boolean().optional(),
+  /** Cyclopt scan tools (cyclopt_scan, cyclopt_job_status). Undefined = auto: register iff a Cyclopt token is configured (cyclopt.api_token or CYCLOPT_API_TOKEN). True/false force the outcome. */
+  cyclopt_tools: z.boolean().optional(),
   /** Model preset tool (preset). Default false; set true to restore registration. The /preset slashcommand remains the supported path. */
   preset_tools: z.boolean().default(false),
 })

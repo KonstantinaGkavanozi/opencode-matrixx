@@ -1,10 +1,34 @@
 import type { MatrixxConfig } from "../config";
+import { CYCLOPT_BLOCKED_TOOLS } from "../mcp/cyclopt-blocked-tools";
 import { isTaskSystemEnabled } from "../shared/task-system-gating";
 
 type AgentWithPermission = { permission?: Record<string, unknown> };
 
 function agentByKey(agentResult: Record<string, unknown>, key: string): AgentWithPermission | undefined {
   return agentResult[key] as AgentWithPermission | undefined;
+}
+
+/**
+ * Hide the Cyclopt code-fixer from every agent. Rules are re-appended LAST on each
+ * agent because OpenCode evaluates permissions last-match-wins, so an agent-level
+ * rule cannot re-enable them.
+ */
+function blockCycloptFixTools(config: Record<string, unknown>, agentResult: Record<string, unknown>): void {
+  const deny = Object.fromEntries(CYCLOPT_BLOCKED_TOOLS.map((tool) => [tool, "deny" as const]));
+  const withoutBlocked = (existing: Record<string, unknown> | undefined) =>
+    Object.fromEntries(Object.entries(existing ?? {}).filter(([key]) => !CYCLOPT_BLOCKED_TOOLS.includes(key)));
+
+  config.tools = {
+    ...(config.tools as Record<string, unknown>),
+    ...Object.fromEntries(CYCLOPT_BLOCKED_TOOLS.map((tool) => [tool, false])),
+  };
+  config.permission = { ...withoutBlocked(config.permission as Record<string, unknown>), ...deny };
+
+  for (const agent of Object.values(agentResult)) {
+    if (!agent || typeof agent !== "object") continue;
+    const withPermission = agent as AgentWithPermission;
+    withPermission.permission = { ...withoutBlocked(withPermission.permission), ...deny };
+  }
 }
 
 export function applyToolConfig(params: {
@@ -107,4 +131,8 @@ export function applyToolConfig(params: {
     external_directory: "allow",
     task: "deny",
   };
+
+  if (params.pluginConfig.cyclopt?.allow_fix_code !== true) {
+    blockCycloptFixTools(params.config, params.agentResult);
+  }
 }

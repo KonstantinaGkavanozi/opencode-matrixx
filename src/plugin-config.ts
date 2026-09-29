@@ -169,6 +169,8 @@ export function mergeConfigs(
     ...override,
     agents: deepMerge(base.agents, override.agents),
     categories: deepMerge(base.categories, override.categories),
+    // Deep-merged so a project-level cyclopt block (e.g. max_batch_files) cannot drop the user-level api_token.
+    cyclopt: deepMerge(base.cyclopt, override.cyclopt),
     disabled_agents: [...disabledAgentsSet],
     disabled_mcps: [...disabledMcpsSet],
     disabled_hooks: [...disabledHooksSet],
@@ -185,6 +187,20 @@ export function mergeConfigs(
   })
 
   return merged
+}
+
+/**
+ * Project config files are commonly committed, so a Cyclopt token found there
+ * is ignored (never merged) and the user is told to move it to the user-level file.
+ */
+export function stripProjectCredentials(project: MatrixxConfig, sourcePath: string): MatrixxConfig {
+  if (!project.cyclopt?.api_token) return project;
+  log(
+    `Ignoring cyclopt.api_token in ${sourcePath}: tokens are only read from the user-level config ` +
+      `(~/.config/opencode/matrixx.jsonc) so they are not committed with the project.`,
+  );
+  const { api_token: _ignored, ...rest } = project.cyclopt;
+  return { ...project, cyclopt: rest };
 }
 
 function resolveConfigPath(baseDir: string, configName: string): string {
@@ -246,7 +262,7 @@ export async function loadPluginConfig(
 
   const projectConfig = loadConfigFromPath(projectConfigPath, ctx);
   if (projectConfig) {
-    config = mergeConfigs(config, projectConfig);
+    config = mergeConfigs(config, stripProjectCredentials(projectConfig, projectConfigPath));
   }
 
   // Migrate prefixed models (in-memory only, with deprecation warning).

@@ -2,7 +2,7 @@
 
 ## OVERVIEW
 
-24 tool dirs (LSP ×6, AST-grep ×2, grep/glob/github-search, session-manager ×4, task ×5 `create/list/get/update/cleanup`, plan ×5 `create/read/update/list/delete` for `.matrixx/plans/*.md`, delegate-task (`task`), background-task ×3 `output/cancel/revive`, handoff, hashline-edit, interactive-bash, look-at, skill, slashcommand, assembly, knowledge-hub-confirm, preset, bdd-* ×4, pdf-extract-figures). Two patterns: Direct ToolDefinition (static) and Factory Function (context-dependent). Conditional registration via `src/plugin/tool-gating.ts` — bdd/pdf-figures/look_at/knowledge-hub-confirm/preset only load when relevant (see TOOL GATING).
+25 tool dirs (LSP ×6, AST-grep ×2, grep/glob/github-search, session-manager ×4, task ×5 `create/list/get/update/cleanup`, plan ×5 `create/read/update/list/delete` for `.matrixx/plans/*.md`, delegate-task (`task`), background-task ×3 `output/cancel/revive`, handoff, hashline-edit, interactive-bash, look-at, skill, slashcommand, assembly, knowledge-hub-confirm, preset, bdd-* ×4, pdf-extract-figures, cyclopt-scan ×2 `cyclopt_scan/cyclopt_job_status`). Two patterns: Direct ToolDefinition (static) and Factory Function (context-dependent). Conditional registration via `src/plugin/tool-gating.ts` — bdd/pdf-figures/look_at/knowledge-hub-confirm/preset only load when relevant (see TOOL GATING).
 
 ## STRUCTURE
 ```
@@ -27,6 +27,7 @@ tools/
 ├── bdd-pipeline/      # BDD pipeline (gated)
 ├── bdd-validate-contract/ # BDD validation (gated)
 ├── github-search/     # Native GitHub code search (replaced white-rabbit MCP)
+├── cyclopt-scan/      # Cyclopt repo-scale scan orchestration (talks to Cyclopt directly over HTTPS; gated on a configured Cyclopt token)
 ├── knowledge-hub-confirm/ # Knowledge-hub write confirm gate (gated: hubs configured)
 ├── pdf-extract-figures/ # PDF figure extraction (gated: *.pdf file or override)
 ├── preset/            # Model preset switch (opt-in only)

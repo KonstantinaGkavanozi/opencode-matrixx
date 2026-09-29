@@ -4,6 +4,7 @@ import type {
 } from "../agents/dynamic-agent-prompt-builder"
 import type { MatrixxConfig } from "../config"
 import type { Managers } from "../create-managers"
+import { hasCycloptToken } from "../mcp/cyclopt-endpoint"
 import { log } from "../shared"
 import { filterDisabledTools } from "../shared/disabled-tools"
 import { isTaskSystemEnabled } from "../shared/task-system-gating"
@@ -16,6 +17,7 @@ import {
   createBddParseGherkinTool,
   createBddPipelineTool,
   createBddValidateContractTool,
+  createCycloptTools,
   createDelegateTask,
   createGithubSearchTools,
   createGlobTools,
@@ -47,6 +49,7 @@ import type { SkillContext } from "./skill-context"
 import {
   isConstructAgentEnabled,
   shouldEnableBddTools,
+  shouldEnableCycloptTools,
   shouldEnableKnowledgeHubConfirm,
   shouldEnableLookAt,
   shouldEnablePdfFigures,
@@ -88,6 +91,9 @@ export function createToolRegistry(args: {
     : {}
   const pdfFiguresRecord: Record<string, ToolDefinition> = pdfFiguresEnabled
     ? { ...createPdfExtractFiguresTool() }
+    : {}
+  const cycloptRecord: Record<string, ToolDefinition> = shouldEnableCycloptTools(hasCycloptToken(pluginConfig.cyclopt), toolGating?.cyclopt_tools)
+    ? createCycloptTools({ directory: ctx.directory, config: pluginConfig.cyclopt })
     : {}
   const presetRecord: Record<string, ToolDefinition> = presetToolsEnabled
     ? { ...createPresetTool({ pluginConfig, directory: ctx.directory }) }
@@ -182,6 +188,7 @@ export function createToolRegistry(args: {
     ...createHandoffTools(ctx),
     ...(knowledgeHubConfirmEnabled ? { knowledge_hub_confirm: createKnowledgeHubConfirmTool(ctx) } : {}),
     ...pdfFiguresRecord,
+    ...cycloptRecord,
     ...presetRecord,
     ...backgroundTools,
     ...(lookAt ? { look_at: lookAt } : {}),

@@ -11,6 +11,7 @@ import { CategoriesConfigSchema } from "./categories"
 import { BuiltinCommandNameSchema } from "./commands"
 import { CommentCheckerConfigSchema } from "./comment-checker"
 import { ContextModeConfigSchema } from "./context-mode"
+import { CycloptConfigSchema } from "./cyclopt"
 import { DcpConfigSchema } from "./dcp"
 import { EvolutionConfigSchema } from "./evolution"
 import { ExperimentalConfigSchema } from "./experimental"
@@ -82,6 +83,8 @@ export const MatrixxConfigSchema = z.object({
   tdd_enforcer: TddEnforcerConfigSchema.optional(),
   browser_automation_engine: BrowserAutomationConfigSchema.optional(),
   websearch: WebsearchConfigSchema.optional(),
+  /** Cyclopt code-analysis integration (agent + MCP + cyclopt_scan tool) */
+  cyclopt: CycloptConfigSchema.optional(),
   tmux: TmuxConfigSchema.optional(),
   terminal: TerminalConfigSchema.optional(),
   morpheus: MorpheusConfigSchema.optional(),

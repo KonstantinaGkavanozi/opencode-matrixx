@@ -18,6 +18,7 @@ import { maybeCreateMorpheusConfig } from "./builtin-agents/morpheus-agent"
 import { CIPHER_PROMPT_METADATA, createCipherAgent } from "./cipher"
 import { CONSTRUCT_PROMPT_METADATA, createConstructAgent } from "./construct"
 import { buildCustomAgentMetadata, parseRegisteredAgentSummaries } from "./custom-agent-summaries"
+import { CYCLOPT_PROMPT_METADATA, createCycloptAgent } from "./cyclopt"
 import type { AvailableCategory } from "./dynamic-agent-prompt-builder"
 import { createKeymakerAgent } from "./keymaker"
 import { createMerovingianAgent, ORACLE_PLAN_BUILDER_METADATA, ORACLE_PROMPT_METADATA } from "./merovingian"
@@ -45,6 +46,7 @@ const agentSources: Partial<Record<BuiltinAgentName, AgentSource>> = {
   architect: createArchitectAgent as AgentFactory,
   cipher: createCipherAgent,
   sentinel: createSentinelAgent,
+  cyclopt: createCycloptAgent,
   sati: createSatiAgent,
   "bdd-contract": createBddContractAgent,
 }
@@ -64,6 +66,7 @@ const agentMetadata: Partial<Record<BuiltinAgentName, AgentPromptMetadata>> = {
   architect: architectPromptMetadata,
   cipher: CIPHER_PROMPT_METADATA,
   sentinel: SENTINEL_PROMPT_METADATA,
+  cyclopt: CYCLOPT_PROMPT_METADATA,
   "bdd-contract": BDD_CONTRACT_PROMPT_METADATA,
 }
 

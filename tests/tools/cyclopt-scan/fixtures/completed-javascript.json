@@ -1,0 +1,82 @@
+{
+  "jobId": "00000000-0000-4000-8000-000000000001",
+  "status": "completed",
+  "summary": { "totalFiles": 1, "languages": ["javascript"], "analyzers": ["metrics", "violations", "sast"] },
+  "languageStatus": { "javascript": "completed" },
+  "createdAt": "2026-09-29T08:13:02.527Z",
+  "updatedAt": "2026-09-29T08:16:48.658Z",
+  "completedAt": "2026-09-29T08:16:48.658Z",
+  "results": {
+    "javascript": {
+      "sast": {
+        "sast": [],
+        "sastMetrics": { "sastVulnerabilities": 0 },
+        "sastScores": { "SECURITY_VIOL": { "avgScore": 1, "avgValue": 0 } }
+      },
+      "violations": {
+        "violations": {
+          "info": {
+            "violations": {
+              "ESLINT_no-unused-vars": {
+                "count": 3,
+                "files": [
+                  { "filePath": "/probe.js", "line": 1 },
+                  { "filePath": "/probe.js", "line": 2 },
+                  { "filePath": "/probe.js", "line": 3 }
+                ],
+                "explanation": "Prevents unused variable declarations, which could indicate errors or incomplete refactoring, cluttering the code.",
+                "category": "Best Practices",
+                "title": "Disallow Unused Variables",
+                "severity": "Major"
+              },
+              "ESLINT_no-undef": {
+                "count": 1,
+                "files": [{ "filePath": "/probe.js", "line": 1 }],
+                "explanation": "This rule can help you locate potential ReferenceErrors resulting from misspellings of variable and parameter names.",
+                "category": "Best Practices",
+                "title": "Disallow Undeclared Variables",
+                "severity": "Major"
+              }
+            },
+            "generalStats": {
+              "Best Practices": { "Minor": 0, "Major": 4, "Critical": 0 },
+              "Code Smell": { "Minor": 0, "Major": 0, "Critical": 0 },
+              "Vulnerability": { "Minor": 0, "Major": 0, "Critical": 0 },
+              "Bug": { "Minor": 0, "Major": 0, "Critical": 0 }
+            }
+          },
+          "totalViolationsCount": 4,
+          "timeToFixViolations": 0.020833333333333332
+        },
+        "violationsScores": { "ESLINT_ERR": { "avgValue": 4, "avgScore": 0.95 } }
+      },
+      "metrics": {
+        "metrics": {
+          "LOC": 4, "LLOC": 3, "numFiles": 1, "MI": 128.06, "CC": 4, "EffortInDays": 0.08,
+          "numParams": 1, "averageLOCPerFunction": 5, "numImports": 0, "CD": 0
+        },
+        "metricsRecommendations": {
+          "CC": { "files": [], "affectedPercetange": 0 },
+          "MI": { "files": [], "affectedPercetange": 0 },
+          "CD": { "files": [{ "filePath": "/probe.js", "value": 0, "line": 1 }], "affectedPercetange": 100 }
+        },
+        "metricsScores": {
+          "ESCOMP_CC": { "avgValue": 4, "avgScore": 0.01 },
+          "ESCOMP_MI": { "avgValue": 128.06, "avgScore": 0.73 }
+        },
+        "analysisResults": {
+          "escomplex": {
+            "complex": {
+              "reports": [
+                {
+                  "maintainability": 128.05920225992853,
+                  "path": "/tmp/sandbox-outer/sandbox-inner/probe.js"
+                }
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

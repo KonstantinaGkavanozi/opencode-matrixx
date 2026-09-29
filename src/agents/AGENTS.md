@@ -2,7 +2,7 @@
 
 ## OVERVIEW
 
-14 AI agents with factory functions, fallback chains, and model-specific prompt variants. Each agent has metadata (category, cost, triggers) and configurable tool restrictions.
+15 AI agents with factory functions, fallback chains, and model-specific prompt variants. Each agent has metadata (category, cost, triggers) and configurable tool restrictions.
 
 ## STRUCTURE
 ```
@@ -26,6 +26,7 @@ agents/
 │   └── index.ts
 ├── cipher.ts                    # DSL engineering specialist
 ├── sentinel.ts                 # Security auditor (220 lines)
+├── cyclopt.ts                  # Cyclopt code-quality analyst (report-only; needs a Cyclopt token: user-config cyclopt.api_token or CYCLOPT_API_TOKEN)
 ├── merovingian.ts              # High-IQ consultation
 ├── smith.ts                    # Plan validator (244 lines)
 ├── construct.ts        # Media analyzer (58 lines)
@@ -56,6 +57,7 @@ agents/
 | Architect | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Cipher | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> → <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Sentinel | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> → <provider>/<model> → <provider>/<model> | EXPENSIVE |
+| Cyclopt | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Merovingian | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Smith | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Construct | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> → <provider>/<model> → <provider>/<model> | EXPENSIVE |
@@ -75,6 +77,7 @@ agents/
 | Mouse | task | No delegation |
 | Architect | task | Orchestration only |
 | Sentinel | write, edit, multiedit, task | Read-only security auditing |
+| Cyclopt | ALL except read/grep/glob + `cyclopt_*` (allowlist; `fix_code` excluded) | Report-only Cyclopt analysis |
 
 ## THINKING / REASONING
 
@@ -86,6 +89,7 @@ agents/
 | Seraph | 32k budget tokens | — |
 | Smith | 32k budget tokens | reasoningEffort: "medium" |
 | Sentinel | 32k budget tokens | reasoningEffort: "medium" |
+| Cyclopt | 8k budget tokens | reasoningEffort: "medium" |
 | Mouse | 32k budget tokens | reasoningEffort: "medium" |
 
 ## HOW TO ADD

@@ -1,6 +1,7 @@
 export { architectPromptMetadata, createArchitectAgent } from "./architect"
 export { createBuiltinAgents } from "./builtin-agents"
 export { CONSTRUCT_PROMPT_METADATA, createConstructAgent } from "./construct"
+export { CYCLOPT_PROMPT_METADATA, createCycloptAgent } from "./cyclopt"
 export type { AvailableAgent, AvailableCategory, AvailableSkill } from "./dynamic-agent-prompt-builder"
 export { createMerovingianAgent, ORACLE_PROMPT_METADATA } from "./merovingian"
 export { createMorpheusAgent } from "./morpheus"

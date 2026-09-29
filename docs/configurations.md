@@ -1191,6 +1191,58 @@ Choose the websearch provider (`src/config/schema/websearch.ts`):
 |--------|------|---------|-------------|
 | `provider` | `string` | `exa` | `exa` works without an API key; `tavily` needs `TAVILY_API_KEY`. |
 
+## Cyclopt
+
+The `cyclopt` agent fronts the [Cyclopt](https://cyclopt.com) code-analysis platform (metrics, violations, SAST, duplication, dependency vulnerabilities). It is **report-only**: it never edits code. By default Matrixx also hides Cyclopt's fixer MCP tools (`fix_code`, `check_fix_job`, `check_fix_usage`) from **every** agent via a global permission deny (`src/plugin-handlers/tool-config-handler.ts`), so nothing can trigger a fix or spend fix credits. `cyclopt.allow_fix_code: true` exposes them to other agents such as Morpheus; the `cyclopt` agent stays report-only either way.
+
+**Setup (recommended, applies to every project)** — put the token in your *user-level* config, `~/.config/opencode/matrixx.jsonc` (on Windows `%USERPROFILE%\.config\opencode\matrixx.jsonc`):
+
+```jsonc
+{
+  "cyclopt": { "api_token": "<your Cyclopt API token>" }
+}
+```
+
+Restart OpenCode. With a token, Matrixx registers the `cyclopt` MCP (11 tools) and the `cyclopt_scan` / `cyclopt_job_status` tools, and the agent can run. Without one they are skipped silently.
+
+- **Token precedence:** the `CYCLOPT_API_TOKEN` environment variable, if set, wins over the config value (handy for CI or a one-off override).
+- **User-level only:** `cyclopt.api_token` is **ignored** in a project's `.opencode/matrixx.jsonc` (a warning is logged), because project files are commonly committed. A project file may still set other `cyclopt` options such as `max_batch_files`; they merge with your global block.
+- Keep `matrixx.jsonc` out of version control and dotfile repos, or restrict its file permissions, since it now holds a credential.
+- If your `opencode.json` also defines an `mcp.cyclopt` entry, it overrides the plugin's built-in one. Remove it to keep the token in a single place.
+
+> **Privacy:** scans upload file contents to the Cyclopt service. `.env*`, keys/certificates, `node_modules`, `dist`, `.git` and `.matrixx` are always excluded.
+
+> **Latency:** jobs run on Cyclopt's servers and take minutes (a single tiny file was measured at ~4 minutes). `cyclopt_scan` blocks until they finish.
+
+```jsonc
+{
+  "cyclopt": {
+    "default_analyzers": ["metrics", "violations", "sast", "duplication"],   // also: "vulnerabilities"
+    "exclude": ["legacy/", "generated/"],
+    "allow_fix_code": false        // true = let non-cyclopt agents call Cyclopt fix_code (uses fix credits)
+  },
+  "tool_gating": { "cyclopt_tools": true },                    // optional: force tools on/off (default: on iff token set)
+  "agents": { "cyclopt": { "model": "anthropic/claude-sonnet-4-6" } },
+  "disabled_agents": ["cyclopt"],                              // to turn it off entirely
+  "disabled_mcps": ["cyclopt"]                                 // to keep the tool but drop the raw MCP tools
+}
+```
+
+All options are optional; defaults are in the table.
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `api_token` | `string` | — | Cyclopt API token. Honoured only from the user-level config; `CYCLOPT_API_TOKEN` env var overrides it. |
+| `base_url` | `string` | `https://mcp-server.cyclopt.com/mcp` | Cyclopt MCP endpoint. |
+| `default_analyzers` | `string[]` | `metrics, violations, sast` | Analyzers `cyclopt_scan` runs when none are specified. |
+| `max_file_bytes` | `number` | `256000` | Larger files are skipped and listed in the report. |
+| `max_batch_files` | `number` | `60` | Files per job. Kept large because per-job latency dominates. |
+| `max_scan_bytes` | `number` | `8000000` | Total upload ceiling per scan. |
+| `poll_interval_ms` | `number` | `15000` (min `10000`) | Poll cadence; the floor is enforced in code and schema. |
+| `job_timeout_ms` | `number` | `900000` | Overall deadline; timed-out jobs are reported as unfinished, never as clean. |
+| `allow_fix_code` | `boolean` | `false` | Expose Cyclopt's code fixer tools to Matrixx agents. The `cyclopt` agent stays report-only regardless. |
+| `exclude` | `string[]` | — | Extra path fragments to never upload. |
+
 ## Failure Counter
 
 Gate repeated tool failures (`src/config/schema/failure-counter.ts`):
