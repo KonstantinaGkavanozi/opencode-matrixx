@@ -131,6 +131,7 @@ export type BuiltinAgentName =
   | "architect"
   | "cipher"
   | "sentinel"
+  | "cyclopt"
   | "sati"
   | "bdd-contract"
   | "neo"

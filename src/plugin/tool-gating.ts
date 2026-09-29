@@ -115,6 +115,12 @@ export function shouldEnableKnowledgeHubConfirm(hubs: readonly unknown[] | undef
   return (hubs ?? []).length > 0
 }
 
+/** cyclopt_scan / cyclopt_job_status: explicit override wins, otherwise auto iff a Cyclopt token is configured. */
+export function shouldEnableCycloptTools(hasToken: boolean, override: boolean | undefined): boolean {
+  if (override !== undefined) return override
+  return hasToken
+}
+
 /** preset: opt-in only, default false. */
 export function shouldEnablePresetTools(override: boolean | undefined): boolean {
   return override ?? false

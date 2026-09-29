@@ -18,11 +18,15 @@ function withEnvVar(name: string, value: string | undefined): void {
 beforeEach(() => {
   ORIGINAL_ENV.EXA_API_KEY = process.env.EXA_API_KEY
   ORIGINAL_ENV.TAVILY_API_KEY = process.env.TAVILY_API_KEY
+  ORIGINAL_ENV.CYCLOPT_API_TOKEN = process.env.CYCLOPT_API_TOKEN
+  // Cyclopt is opt-in via token; keep the 3-built-in-MCP assertions hermetic.
+  delete process.env.CYCLOPT_API_TOKEN
 })
 
 afterEach(() => {
   withEnvVar("EXA_API_KEY", ORIGINAL_ENV.EXA_API_KEY)
   withEnvVar("TAVILY_API_KEY", ORIGINAL_ENV.TAVILY_API_KEY)
+  withEnvVar("CYCLOPT_API_TOKEN", ORIGINAL_ENV.CYCLOPT_API_TOKEN)
 })
 
 describe("createBuiltinMcps — new { mcps, failures } contract", () => {

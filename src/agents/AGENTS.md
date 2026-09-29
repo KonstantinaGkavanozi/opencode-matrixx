@@ -28,6 +28,7 @@ agents/
 │   └── index.ts
 ├── cipher.ts                    # DSL engineering specialist
 ├── sentinel.ts                 # Security auditor (220 lines)
+├── cyclopt.ts                  # Cyclopt code-quality analyst (report-only; needs a Cyclopt token: user-config cyclopt.api_token or CYCLOPT_API_TOKEN)
 ├── merovingian.ts              # High-IQ consultation
 ├── smith.ts                    # Plan validator (244 lines) — pre-execution reviewer
 ├── auditor.ts                  # Post-execution plan auditor (147 lines) — /plan-review only
@@ -59,6 +60,7 @@ agents/
 | Architect | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Cipher | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> → <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Sentinel | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> → <provider>/<model> → <provider>/<model> | EXPENSIVE |
+| Cyclopt | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Merovingian | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Smith | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Auditor | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
@@ -85,6 +87,7 @@ An agent receives `task_*` iff `MODE ∈ {primary, all}` and its work is multi-s
 | Keymaker | primary | — | `task_*`, teammate |
 | Bdd-contract | all | — | `task_*`, teammate |
 | Auditor | subagent | write, edit, task | Read-only post-execution measurement; reports go to `.matrixx/reviews/`, never into the plan |
+| Cyclopt | subagent | ALL except read/grep/glob + `cyclopt_*` (allowlist; `fix_code` excluded) | Report-only Cyclopt analysis |
 
 ## THINKING / REASONING
 
@@ -97,6 +100,7 @@ An agent receives `task_*` iff `MODE ∈ {primary, all}` and its work is multi-s
 | Smith | 32k budget tokens | reasoningEffort: "medium" |
 | Auditor | 32k budget tokens | reasoningEffort: "medium" |
 | Sentinel | 32k budget tokens | reasoningEffort: "medium" |
+| Cyclopt | 8k budget tokens | reasoningEffort: "medium" |
 | Mouse | 32k budget tokens | reasoningEffort: "medium" |
 
 ## HOW TO ADD
