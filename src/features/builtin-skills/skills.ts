@@ -53,6 +53,14 @@ const skillLoaders: Record<string, () => BuiltinSkill> = {
   "matrixx-self-config": () => require("./skills/matrixx-self-config").matrixxSelfConfigSkill,
   "ulw-research": () => require("./skills/ulw-research").ulwResearchSkill,
   "remove-ai-slops": () => require("./skills/remove-ai-slops").removeAiSlopsSkill,
+  // ZeroMQ expertise family
+  "zeromq-core": () => require("./skills/zeromq-core").zeromqCoreSkill,
+  "zeromq-sockets-patterns": () => require("./skills/zeromq-sockets-patterns").zeromqSocketsPatternsSkill,
+  "zeromq-advanced-reqrep": () => require("./skills/zeromq-advanced-reqrep").zeromqAdvancedReqrepSkill,
+  "zeromq-reliability": () => require("./skills/zeromq-reliability").zeromqReliabilitySkill,
+  "zeromq-pubsub": () => require("./skills/zeromq-pubsub").zeromqPubsubSkill,
+  "zeromq-architecture": () => require("./skills/zeromq-architecture").zeromqArchitectureSkill,
+  "zeromq-frameworks": () => require("./skills/zeromq-frameworks").zeromqFrameworksSkill,
 }
 
 export interface CreateBuiltinSkillsOptions {
