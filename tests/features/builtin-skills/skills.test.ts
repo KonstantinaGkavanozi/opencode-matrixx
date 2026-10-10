@@ -84,7 +84,29 @@ describe("createBuiltinSkills", () => {
 		}
 	})
 
-	test("returns exactly 44 skills regardless of provider", () => {
+	test("should include all 7 zeromq skills", () => {
+		// #given
+
+		// #when
+		const skills = createBuiltinSkills()
+		const skillNames = skills.map((s) => s.name)
+
+		// #then
+		const zeromqSkills = [
+			"zeromq-core",
+			"zeromq-sockets-patterns",
+			"zeromq-advanced-reqrep",
+			"zeromq-reliability",
+			"zeromq-pubsub",
+			"zeromq-architecture",
+			"zeromq-frameworks",
+		]
+		for (const name of zeromqSkills) {
+			expect(skillNames).toContain(name)
+		}
+	})
+
+	test("returns exactly 51 skills regardless of provider", () => {
 		// given
 
 		// when
@@ -92,8 +114,8 @@ describe("createBuiltinSkills", () => {
 		const agentBrowserSkills = createBuiltinSkills({ browserProvider: "agent-browser" })
 
 		// then
-		expect(defaultSkills).toHaveLength(44)
-		expect(agentBrowserSkills).toHaveLength(44)
+		expect(defaultSkills).toHaveLength(51)
+		expect(agentBrowserSkills).toHaveLength(51)
 	})
 
 	test("should exclude playwright when it is in disabledSkills", () => {
@@ -109,7 +131,7 @@ describe("createBuiltinSkills", () => {
 		expect(skills.map((s) => s.name)).toContain("git-master")
 		expect(skills.map((s) => s.name)).toContain("dev-browser")
 		expect(skills.map((s) => s.name)).toContain("dsl-core")
-		expect(skills.length).toBe(43)
+		expect(skills.length).toBe(50)
 	})
 
 	test("should return all skills when disabledSkills set is empty", () => {
@@ -120,7 +142,7 @@ describe("createBuiltinSkills", () => {
 		const skills = createBuiltinSkills(options)
 
 		// #then
-		expect(skills.length).toBe(44)
+		expect(skills.length).toBe(51)
 	})
 
 	test("should always include docker-master skill", () => {
