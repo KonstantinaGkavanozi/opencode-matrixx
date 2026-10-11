@@ -23,11 +23,13 @@ import type { AvailableCategory } from "./dynamic-agent-prompt-builder"
 import { createKeymakerAgent } from "./keymaker"
 import { createMerovingianAgent, ORACLE_PLAN_BUILDER_METADATA, ORACLE_PROMPT_METADATA } from "./merovingian"
 import { createMorpheusAgent } from "./morpheus"
+import { createNeoAgent, NEO_PROMPT_METADATA } from "./neo"
 import { createOperatorAgent, OPERATOR_PROMPT_METADATA } from "./operator"
 import { createSatiAgent } from "./sati"
 import { createSentinelAgent, SENTINEL_PROMPT_METADATA } from "./sentinel"
 import { createSeraphAgent, seraphPromptMetadata } from "./seraph"
 import { createSmithAgent, smithPromptMetadata } from "./smith"
+import { createTankAgent, TANK_PROMPT_METADATA } from "./tank"
 import { createTrinityAgent, TRINITY_PROMPT_METADATA } from "./trinity"
 import type { AgentFactory, AgentOverrides, AgentPromptMetadata, BuiltinAgentName } from "./types"
 
@@ -47,6 +49,8 @@ const agentSources: Partial<Record<BuiltinAgentName, AgentSource>> = {
   architect: createArchitectAgent as AgentFactory,
   cipher: createCipherAgent,
   sentinel: createSentinelAgent,
+  neo: createNeoAgent,
+  tank: createTankAgent,
   sati: createSatiAgent,
   "bdd-contract": createBddContractAgent,
 }
@@ -67,6 +71,8 @@ const agentMetadata: Partial<Record<BuiltinAgentName, AgentPromptMetadata>> = {
   architect: architectPromptMetadata,
   cipher: CIPHER_PROMPT_METADATA,
   sentinel: SENTINEL_PROMPT_METADATA,
+  neo: NEO_PROMPT_METADATA,
+  tank: TANK_PROMPT_METADATA,
   "bdd-contract": BDD_CONTRACT_PROMPT_METADATA,
 }
 

@@ -16,6 +16,8 @@ export const BuiltinAgentNameSchema = z.enum([
   "sentinel",
   "sati",
   "bdd-contract",
+  "neo",
+  "tank",
 ])
 
 export const BuiltinSkillNameSchema = z.enum([
@@ -56,6 +58,19 @@ export const BuiltinSkillNameSchema = z.enum([
   "bdd-contract",
   "bdd-frontend",
   "bdd-tests",
+  "python-asyncio",
+  "ccxt-rest",
+  "ccxt-pro-websockets",
+  "market-data-bus",
+  "market-data-architecture",
+  "crypto-market-structure",
+  "time-series-fundamentals",
+  "influxdb-timeseries",
+  "grafana-dashboards",
+  "telegram-bot",
+  "resilience-error-taxonomy",
+  "silent-failure-detection",
+  "data-quality-observability",
 ])
 
 export type AgentName = z.infer<typeof BuiltinAgentNameSchema>

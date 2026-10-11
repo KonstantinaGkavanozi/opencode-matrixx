@@ -24,6 +24,7 @@ import {
   createWebFetchRedirectGuardHook,
   createWriteExistingFileGuardHook,
 } from "../../hooks"
+import { createSilentFailureGuardHook } from "../../hooks/silent-failure-guard"
 import {
   getOpenCodeVersion,
   isOpenCodeVersionAtLeast,
@@ -41,6 +42,7 @@ export type ToolGuardHooks = {
   emptyTaskResponseDetector: ReturnType<typeof createEmptyTaskResponseDetectorHook> | null
   rulesInjector: ReturnType<typeof createRulesInjectorHook> | null
   writeExistingFileGuard: ReturnType<typeof createWriteExistingFileGuardHook> | null
+  silentFailureGuard: ReturnType<typeof createSilentFailureGuardHook> | null
   hashlineReadEnhancer: ReturnType<typeof createHashlineReadEnhancerHook> | null
   secretLeakGuard: ReturnType<typeof createSecretLeakGuardHook> | null
   envFileWriteGuard: ReturnType<typeof createEnvFileWriteGuardHook> | null
@@ -108,6 +110,10 @@ export function createToolGuardHooks(args: {
 
   const writeExistingFileGuard = isHookEnabled("write-existing-file-guard")
     ? safeHook("write-existing-file-guard", () => createWriteExistingFileGuardHook(ctx))
+    : null
+
+  const silentFailureGuard = isHookEnabled("silent-failure-guard")
+    ? safeHook("silent-failure-guard", () => createSilentFailureGuardHook(ctx))
     : null
 
   const hashlineReadEnhancer = isHookEnabled("hashline-read-enhancer")
@@ -184,6 +190,7 @@ export function createToolGuardHooks(args: {
     emptyTaskResponseDetector,
     rulesInjector,
     writeExistingFileGuard,
+    silentFailureGuard,
     hashlineReadEnhancer,
     secretLeakGuard,
     envFileWriteGuard,

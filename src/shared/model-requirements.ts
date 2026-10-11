@@ -104,6 +104,18 @@ export const DEFAULT_AGENT_MODEL_REQUIREMENTS: Record<string, ModelRequirement> 
       { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-opus-4-6", variant: "max" }, // allow-hardcoded: first-run fallback
     ],
   },
+  neo: {
+    fallbackChain: [
+      { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-opus-4-6", variant: "max" }, // allow-hardcoded: first-run fallback
+      { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-sonnet-4-6" }, // allow-hardcoded: first-run fallback
+    ],
+  },
+  tank: {
+    fallbackChain: [
+      { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-sonnet-4-6" }, // allow-hardcoded: first-run fallback
+      { providers: ["anthropic", "github-copilot", "opencode"], model: "claude-opus-4-6", variant: "max" }, // allow-hardcoded: first-run fallback
+    ],
+  },
 }
 
 export const DEFAULT_CATEGORY_MODEL_REQUIREMENTS: Record<string, ModelRequirement> = {

@@ -14,6 +14,7 @@ import {
   createToolPairValidatorHook,
 } from "../../hooks"
 import { createDcpNudgeSanitizerHook } from "../../hooks/dcp-nudge-sanitizer"
+import { createDomainKeywordDetectorHook } from "../../hooks/domain-keyword-detector"
 import { createInputSecretGuardHook } from "../../hooks/input-secret-guard"
 import { safeCreateHook } from "../../shared/safe-create-hook"
 import type { PluginContext } from "../types"
@@ -21,6 +22,7 @@ import type { PluginContext } from "../types"
 export type TransformHooks = {
   inputSecretGuard: ReturnType<typeof createInputSecretGuardHook> | null
   keywordDetector: ReturnType<typeof createKeywordDetectorHook> | null
+  domainKeywordDetector: ReturnType<typeof createDomainKeywordDetectorHook> | null
   contextInjectorMessagesTransform: ReturnType<typeof createContextInjectorMessagesTransformHook>
   knowledgeHubInjector: ReturnType<typeof createKnowledgeHubInjectorHook> | null
   envContextInjector: ReturnType<typeof createEnvContextInjectorHook> | null
@@ -52,6 +54,14 @@ export function createTransformHooks(args: {
     ? safeCreateHook(
         "keyword-detector",
         () => createKeywordDetectorHook(ctx, contextCollector),
+        { enabled: safeHookEnabled },
+      )
+    : null
+
+  const domainKeywordDetector = isHookEnabled("domain-keyword-detector")
+    ? safeCreateHook(
+        "domain-keyword-detector",
+        () => createDomainKeywordDetectorHook(),
         { enabled: safeHookEnabled },
       )
     : null
@@ -114,6 +124,7 @@ export function createTransformHooks(args: {
   return {
     inputSecretGuard,
     keywordDetector,
+    domainKeywordDetector,
     contextInjectorMessagesTransform,
     knowledgeHubInjector,
     envContextInjector,
