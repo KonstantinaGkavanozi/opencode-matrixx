@@ -9,6 +9,7 @@ export { CONSTRUCT_PROMPT_METADATA, createConstructAgent } from "./construct"
 export type { AvailableAgent, AvailableCategory, AvailableSkill } from "./dynamic-agent-prompt-builder"
 export { createMerovingianAgent, ORACLE_PROMPT_METADATA } from "./merovingian"
 export { createMorpheusAgent } from "./morpheus"
+export { createNeoAgent, NEO_PROMPT_METADATA } from "./neo"
 export { createOperatorAgent, OPERATOR_PROMPT_METADATA } from "./operator"
 export {
   ORACLE_BEHAVIORAL_SUMMARY,
@@ -22,5 +23,6 @@ export {
 } from "./oracle"
 export { createSeraphAgent, SERAPH_SYSTEM_PROMPT, seraphPromptMetadata } from "./seraph"
 export { createSmithAgent, SMITH_SYSTEM_PROMPT, smithPromptMetadata } from "./smith"
+export { createTankAgent, TANK_PROMPT_METADATA } from "./tank"
 export { createTrinityAgent, TRINITY_PROMPT_METADATA } from "./trinity"
 export * from "./types"

@@ -61,6 +61,20 @@ const skillLoaders: Record<string, () => BuiltinSkill> = {
   "zeromq-pubsub": () => require("./skills/zeromq-pubsub").zeromqPubsubSkill,
   "zeromq-architecture": () => require("./skills/zeromq-architecture").zeromqArchitectureSkill,
   "zeromq-frameworks": () => require("./skills/zeromq-frameworks").zeromqFrameworksSkill,
+  // Crypto / market-data domain skills
+  "python-asyncio": () => require("./skills/python-asyncio").pythonAsyncioSkill,
+  "ccxt-rest": () => require("./skills/ccxt-rest").ccxtRestSkill,
+  "ccxt-pro-websockets": () => require("./skills/ccxt-pro-websockets").ccxtProWebsocketsSkill,
+  "market-data-bus": () => require("./skills/market-data-bus").marketDataBusSkill,
+  "market-data-architecture": () => require("./skills/market-data-architecture").marketDataArchitectureSkill,
+  "crypto-market-structure": () => require("./skills/crypto-market-structure").cryptoMarketStructureSkill,
+  "time-series-fundamentals": () => require("./skills/time-series-fundamentals").timeSeriesFundamentalsSkill,
+  "influxdb-timeseries": () => require("./skills/influxdb-timeseries").influxdbTimeseriesSkill,
+  "grafana-dashboards": () => require("./skills/grafana-dashboards").grafanaDashboardsSkill,
+  "telegram-bot": () => require("./skills/telegram-bot").telegramBotSkill,
+  "resilience-error-taxonomy": () => require("./skills/resilience-error-taxonomy").resilienceErrorTaxonomySkill,
+  "silent-failure-detection": () => require("./skills/silent-failure-detection").silentFailureDetectionSkill,
+  "data-quality-observability": () => require("./skills/data-quality-observability").dataQualityObservabilitySkill,
 }
 
 export interface CreateBuiltinSkillsOptions {
