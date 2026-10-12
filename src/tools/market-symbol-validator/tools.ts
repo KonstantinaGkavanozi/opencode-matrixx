@@ -1,6 +1,6 @@
 import { isAbsolute, join } from "node:path"
-import type { PluginInput } from "@opencode-ai/plugin"
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import { z } from "zod"
+import type { V2ToolDefinition, V2ToolsRecord } from "../../plugin/types"
 import { MARKET_SYMBOL_VALIDATE_DESCRIPTION } from "./constants"
 import type { SymbolFinding, SymbolValidationResult } from "./types"
 import { buildResult, validatePath, validateSymbols, validateText } from "./validator"
@@ -13,26 +13,26 @@ function errorResult(message: string): SymbolValidationResult {
   }
 }
 
-export function createMarketSymbolValidatorTool(ctx: PluginInput): Record<string, ToolDefinition> {
-  const market_symbol_validate: ToolDefinition = tool({
+const marketSymbolValidateInput = z.object({
+  source: z.string().optional().describe("Inline source text to validate."),
+  path: z.string().optional().describe("File or directory to validate (absolute, or relative to the project directory)."),
+  symbols: z.array(z.string()).optional().describe("Symbols to validate directly."),
+  exchangeMarkets: z
+    .array(z.string())
+    .optional()
+    .describe("Allowlist of unified symbols; symbols outside it are flagged (MS003)."),
+})
+
+export function createMarketSymbolValidatorTool(ctx: { directory: string }): V2ToolsRecord {
+  const market_symbol_validate: V2ToolDefinition = {
+    name: "market_symbol_validate",
     description: MARKET_SYMBOL_VALIDATE_DESCRIPTION,
-    args: {
-      source: tool.schema.string().optional().describe("Inline source text to validate."),
-      path: tool.schema
-        .string()
-        .optional()
-        .describe("File or directory to validate (absolute, or relative to the project directory)."),
-      symbols: tool.schema.array(tool.schema.string()).optional().describe("Symbols to validate directly."),
-      exchangeMarkets: tool.schema
-        .array(tool.schema.string())
-        .optional()
-        .describe("Allowlist of unified symbols; symbols outside it are flagged (MS003)."),
-    },
-    async execute(args) {
+    input: marketSymbolValidateInput,
+    async execute(args: z.infer<typeof marketSymbolValidateInput>) {
       try {
         const symbols = args.symbols ?? []
         if (!args.source && !args.path && symbols.length === 0) {
-          return JSON.stringify(errorResult("provide source, path, or symbols"), null, 2)
+          return { content: JSON.stringify(errorResult("provide source, path, or symbols"), null, 2) }
         }
         const marketSet =
           args.exchangeMarkets && args.exchangeMarkets.length > 0 ? new Set(args.exchangeMarkets) : null
@@ -50,13 +50,13 @@ export function createMarketSymbolValidatorTool(ctx: PluginInput): Record<string
           filesScanned = result.summary.filesScanned
         }
 
-        return JSON.stringify(buildResult(findings, filesScanned), null, 2)
+        return { content: JSON.stringify(buildResult(findings, filesScanned), null, 2) }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
-        return JSON.stringify(errorResult(`market_symbol_validate failed: ${message}`), null, 2)
+        return { content: JSON.stringify(errorResult(`market_symbol_validate failed: ${message}`), null, 2) }
       }
     },
-  })
+  }
 
   return { market_symbol_validate }
 }

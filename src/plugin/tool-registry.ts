@@ -101,7 +101,7 @@ export function createToolRegistry(args: {
   const presetToolsEnabled = shouldEnablePresetTools(toolGating?.preset_tools)
   const evolutionEnabled = shouldEnableEvolutionTool(pluginConfig.evolution?.enabled)
   const evolutionRecord = evolutionEnabled ? createEvolutionTool(ctx) : {}
-  const cycloptRecord: Record<string, ToolDefinition> = shouldEnableCycloptTools(
+  const cycloptRecord: V2ToolsRecord = shouldEnableCycloptTools(
     hasCycloptToken(pluginConfig.cyclopt),
     toolGating?.cyclopt_tools,
   )
@@ -120,7 +120,7 @@ export function createToolRegistry(args: {
   const presetRecord: V2ToolsRecord = presetToolsEnabled
     ? { ...createPresetTool({ pluginConfig, directory: ctx.directory }) }
     : {}
-  const sessionCleanupRecord: Record<string, ToolDefinition> = shouldEnableSessionCleanup(
+  const sessionCleanupRecord: V2ToolsRecord = shouldEnableSessionCleanup(
     toolGating?.session_cleanup,
   )
     ? { session_cleanup: createSessionCleanupTool(ctx) }

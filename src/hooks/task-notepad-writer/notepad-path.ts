@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
 
-import type { PluginInput } from "@opencode-ai/plugin"
+import type { PluginContext } from "../../plugin/types"
 import type { MatrixxConfig } from "../../config/schema"
 import {
   ADHOC_BUCKET,
@@ -15,7 +15,7 @@ import {
   taskIdMarkerPresent,
 } from "./constants"
 
-export type TaskNotepadWriterContext = PluginInput & {
+export type TaskNotepadWriterContext = PluginContext & {
   config?: Partial<MatrixxConfig>
 }
 
