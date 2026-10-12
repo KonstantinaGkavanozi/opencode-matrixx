@@ -197,6 +197,21 @@ describe("createRtkBashRewriterHook", () => {
     expect(output.args.command).toBe("echo hello")
     Bun.which = originalWhich; Bun.spawn = originalSpawn
   })
+  test("passes through when rewritten command wraps a Unix tool missing from PATH", async () => {
+    //#given
+    const originalWhich = Bun.which; const originalSpawn = Bun.spawn
+    Bun.which = ((name: string) => (name === "rtk" ? "/usr/bin/rtk" : null)) as any
+    Bun.spawn = spawnMock(0, "rtk ls test")
+    const config = { rtk: { enabled: true } } as MatrixxConfig
+    const hook = createRtkBashRewriterHook({} as any, config)
+    const input = { tool: "bash", sessionID: "test", callID: "1" }
+    const output = { args: { command: "ls test" } }
+    //#when
+    await hook["tool.execute.before"](input, output)
+    //#then
+    expect(output.args.command).toBe("ls test")
+    Bun.which = originalWhich; Bun.spawn = originalSpawn
+  })
   test("end-to-end with nonInteractiveEnv", async () => {
     //#given
     const originalWhich = Bun.which; const originalSpawn = Bun.spawn
