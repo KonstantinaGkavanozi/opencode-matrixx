@@ -196,7 +196,14 @@ const v2Plugin = Plugin.define({
   },
 })
 
-const MatrixxPlugin = Object.assign(v1Plugin, v2Plugin)
+// OpenCode V2 decodes the default export through a schema that requires an
+// OBJECT carrying `id` plus `setup`/`effect`; a function is rejected with
+// `PluginModule.LoadError: ... SchemaError(Expected object at ["default"])`.
+// `Plugin.define` is the identity function, so `v2Plugin` is already that plain
+// object -- spreading it in (rather than assigning its fields onto the V1
+// function) keeps the export an object. `server` is retained so V1, which
+// invokes `module.default.server`, keeps working.
+const MatrixxPlugin = Object.assign({}, v2Plugin, { server: v1Plugin })
 
 export default MatrixxPlugin
 
