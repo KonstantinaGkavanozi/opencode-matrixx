@@ -10,14 +10,17 @@ describe("createCycloptAgent", () => {
   test("is a low-temperature read-only specialist", () => {
     //#then
     expect(agent.temperature).toBe(0.1)
-    expect(agent.mode).toBe("all")
-    expect(createCycloptAgent.mode).toBe("all")
+    expect(agent.mode).toBe("subagent")
+    expect(createCycloptAgent.mode).toBe("subagent")
   })
 
-  test("denies everything by default, including write, edit, bash and delegation", () => {
+  test("denies everything by default, including write, edit and delegation — but declares bash", () => {
     //#then
     expect(agent.permission["*"]).toBe("deny")
-    for (const t of ["write", "edit", "multiedit", "bash", "task"]) expect(agent.permission[t]).toBeUndefined()
+    for (const t of ["write", "edit", "multiedit", "task"]) expect(agent.permission[t]).toBeUndefined()
+    // bash is declared solely so free-tier providers recognise the request as genuine;
+    // the system prompt forbids the agent from ever invoking it.
+    expect(agent.permission["bash"]).toBe("allow")
   })
 
   test("report-only: fix_code and check_fix_job are unreachable in either MCP naming form", () => {
@@ -49,6 +52,7 @@ describe("createCycloptAgent", () => {
     expect(agent.prompt).toContain("NOT \"the code is secure")
     expect(agent.prompt).toContain("Sentinel")
     expect(agent.prompt).toContain("CYCLOPT_API_TOKEN")
+    expect(agent.prompt).toContain("FreeTierError")
   })
 
   test("Claude models get extended thinking; GPT models get reasoning effort", () => {

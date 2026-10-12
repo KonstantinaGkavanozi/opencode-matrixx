@@ -22,7 +22,7 @@ Matrixx is a multi-agent orchestration plugin for OpenCode: specialized agents, 
 
 ## Agents (summary)
 
-Matrixx provides 14 specialized agents (`BuiltinAgentNameSchema` in `src/config/schema/agent-names.ts`; factories in `src/agents/`): Morpheus (default orchestrator), Keymaker, Merovingian, Operator, Trinity, Construct, Sati (frontend), Architect, Cipher (DSL), Sentinel (security, read-only), Oracle, Seraph, Smith, plus `bdd-contract`. Full roster with models, fallbacks, tool restrictions, and background/tmux usage: [Agents](agents.md). Planning/execution model: [Orchestration](orchestration.md).
+Matrixx provides 16 specialized agents (`BuiltinAgentNameSchema` in `src/config/schema/agent-names.ts`; factories in `src/agents/`): Morpheus (default orchestrator), Keymaker, Merovingian, Operator, Trinity, Construct, Sati (frontend), Architect, Cipher (DSL), Sentinel (security, read-only), Cyclopt (code-quality analysis, report-only), Tank (regression validation), Oracle, Seraph, Smith, plus `bdd-contract`. Full roster with models, fallbacks, tool restrictions, and background/tmux usage: [Agents](agents.md). Planning/execution model: [Orchestration](orchestration.md).
 
 ### Background Agents (summary)
 

@@ -16,7 +16,7 @@
 | Page | Audience | What you get |
 |---|---|---|
 | `orchestration.md` | Users running multi-step work | The delegation workflow: planner → plan → mission → workers |
-| `agents.md` | Users choosing agents | The 14 agents: what each does and when to use it |
+| `agents.md` | Users choosing agents | The 16 agents: what each does and when to use it |
 | `category-skill-guide.md` | Users composing work | The 8 task categories × 37 skills, and how they combine |
 | `command-reference.md` | Users | All 24 slash commands: usage, options, examples |
 | `quality.md` | Users implementing features or enforcing tests | BDD pipeline (Part A) + TDD discipline (Part B): when to use which |

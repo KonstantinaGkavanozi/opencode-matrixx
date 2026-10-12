@@ -266,9 +266,9 @@ work complete. It cannot delegate further and cannot touch plan files.
 | **bdd-contract** | `src/agents/bdd-contract.ts` | BDD contract work (see `/bdd-contract`) |
 | **env-context** | `src/agents/env-context.ts` | Environment context variant |
 
-The full registry (14 built-ins: `morpheus`, `keymaker`, `oracle`,
+The full registry (16 built-ins: `morpheus`, `keymaker`, `oracle`,
 `merovingian`, `operator`, `trinity`, `construct`, `seraph`, `smith`,
-`architect`, `cipher`, `sentinel`, `sati`, `bdd-contract`) lives in
+`architect`, `cipher`, `sentinel`, `cyclopt`, `tank`, `sati`, `bdd-contract`) lives in
 `src/agents/builtin-agents.ts` with the schema in
 `src/config/schema/agent-names.ts`. Mouse is created dynamically as the
 delegated executor. Models resolve from your configured providers with
