@@ -168,7 +168,6 @@ describe("AGENT_DISPLAY_NAMES", () => {
       construct: "construct",
       cipher: "Cipher (DSL Expert)",
       neo: "Neo",
-      tank: "Tank",
     }
 
     // when checking the constant
