@@ -1,6 +1,6 @@
 import type { MatrixxConfig } from "../config";
-import { denyTodoTools, fullTaskPermissions, grantTaskPermissions, taskStorePermissions } from "./task-permissions";
 import { CYCLOPT_BLOCKED_TOOLS } from "../mcp/cyclopt-blocked-tools";
+import { denyTodoTools, fullTaskPermissions, grantTaskPermissions, taskStorePermissions } from "./task-permissions";
 
 type AgentWithPermission = { permission?: Record<string, unknown>; mode?: string };
 
