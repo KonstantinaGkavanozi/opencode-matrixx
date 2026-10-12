@@ -52,7 +52,7 @@ describe("task_create tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -69,7 +69,7 @@ describe("task_create tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -83,7 +83,7 @@ describe("task_create tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
       const taskId = result.tasks[0].id
 
@@ -101,7 +101,7 @@ describe("task_create tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
       const taskId = result.tasks[0].id
 
@@ -118,7 +118,7 @@ describe("task_create tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
       const taskId = result.tasks[0].id
 
@@ -137,7 +137,7 @@ describe("task_create tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
       const taskId = result.tasks[0].id
 
@@ -155,7 +155,7 @@ describe("task_create tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
       const taskId = result.tasks[0].id
 
@@ -173,7 +173,7 @@ describe("task_create tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
       const taskId = result.tasks[0].id
 
@@ -191,7 +191,7 @@ describe("task_create tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
       const taskId = result.tasks[0].id
 
@@ -209,7 +209,7 @@ describe("task_create tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
       const taskId = result.tasks[0].id
 
@@ -227,7 +227,7 @@ describe("task_create tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
       const taskId = result.tasks[0].id
 
@@ -245,7 +245,7 @@ describe("task_create tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
       const taskId = result.tasks[0].id
 
@@ -262,7 +262,7 @@ describe("task_create tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -276,7 +276,7 @@ describe("task_create tool", () => {
       const args = {}
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -291,7 +291,7 @@ describe("task_create tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
       const taskId = result.tasks[0].id
 
@@ -312,7 +312,7 @@ describe("task_create tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -327,7 +327,7 @@ describe("task_create tool", () => {
       }
 
       //#when
-      const resultStr = await tool.execute(args, TEST_CONTEXT)
+      const resultStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const result = JSON.parse(resultStr)
 
       //#then
@@ -341,9 +341,9 @@ describe("task_create tool", () => {
       const args = { subject: "Implement authentication" }
 
       //#when
-      const firstStr = await tool.execute(args, TEST_CONTEXT)
+      const firstStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const first = JSON.parse(firstStr)
-      const secondStr = await tool.execute(args, TEST_CONTEXT)
+      const secondStr = await tool.execute(args, TEST_CONTEXT).then((__r) => __r.content)
       const second = JSON.parse(secondStr)
 
       //#then
@@ -362,9 +362,9 @@ describe("task_create tool", () => {
       const secondArgs = { subject: "Write documentation" }
 
       //#when
-      const firstStr = await tool.execute(firstArgs, TEST_CONTEXT)
+      const firstStr = await tool.execute(firstArgs, TEST_CONTEXT).then((__r) => __r.content)
       const first = JSON.parse(firstStr)
-      const secondStr = await tool.execute(secondArgs, TEST_CONTEXT)
+      const secondStr = await tool.execute(secondArgs, TEST_CONTEXT).then((__r) => __r.content)
       const second = JSON.parse(secondStr)
 
       //#then

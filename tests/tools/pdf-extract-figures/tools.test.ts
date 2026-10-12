@@ -142,14 +142,14 @@ describe("pdf_extract_figures tool", () => {
 
     test("file_path argument is required", () => {
       const tools = createPdfExtractFiguresTool()
-      const args = tools.pdf_extract_figures.args as AnyRecord
-      expect(args).toHaveProperty("file_path")
+      const input = tools.pdf_extract_figures.input as { shape: AnyRecord }
+      expect(input.shape).toHaveProperty("file_path")
     })
 
     test("output_dir argument is optional", () => {
       const tools = createPdfExtractFiguresTool()
-      const args = tools.pdf_extract_figures.args as AnyRecord
-      expect(args).toHaveProperty("output_dir")
+      const input = tools.pdf_extract_figures.input as { shape: AnyRecord }
+      expect(input.shape).toHaveProperty("output_dir")
     })
   })
 
@@ -161,7 +161,7 @@ describe("pdf_extract_figures tool", () => {
       const result = await tools.pdf_extract_figures.execute(
         {},
         mockContext,
-      )
+      ).then((__r) => __r.content)
       expect(result).toContain("Error")
       expect(result).toContain("file_path")
     })
@@ -171,7 +171,7 @@ describe("pdf_extract_figures tool", () => {
       const result = await tools.pdf_extract_figures.execute(
         { file_path: "" },
         mockContext,
-      )
+      ).then((__r) => __r.content)
       expect(result).toContain("Error")
       expect(result).toContain("file_path")
     })
@@ -181,7 +181,7 @@ describe("pdf_extract_figures tool", () => {
       const result = await tools.pdf_extract_figures.execute(
         { file_path: "/nonexistent/file.pdf" },
         mockContext,
-      )
+      ).then((__r) => __r.content)
       expect(result).toContain("Error")
       expect(result).toContain("not found")
     })
@@ -192,7 +192,7 @@ describe("pdf_extract_figures tool", () => {
       const result = await tools.pdf_extract_figures.execute(
         { file_path: "/path/to/file.txt" },
         mockContext,
-      )
+      ).then((__r) => __r.content)
       expect(result).toContain("Error")
       expect(result).toContain("PDF")
     })
@@ -202,7 +202,7 @@ describe("pdf_extract_figures tool", () => {
       const result = await tools.pdf_extract_figures.execute(
         { file_path: SAMPLE_VALID_PDF, page: 0 },
         mockContext,
-      )
+      ).then((__r) => __r.content)
       expect(result).toContain("Error")
     })
 
@@ -211,7 +211,7 @@ describe("pdf_extract_figures tool", () => {
       const result = await tools.pdf_extract_figures.execute(
         { file_path: SAMPLE_VALID_PDF, min_width: -1 },
         mockContext,
-      )
+      ).then((__r) => __r.content)
       expect(result).toContain("Error")
     })
 
@@ -220,7 +220,7 @@ describe("pdf_extract_figures tool", () => {
       const result = await tools.pdf_extract_figures.execute(
         { file_path: SAMPLE_VALID_PDF, min_height: -5 },
         mockContext,
-      )
+      ).then((__r) => __r.content)
       expect(result).toContain("Error")
     })
 
@@ -229,7 +229,7 @@ describe("pdf_extract_figures tool", () => {
       const result = await tools.pdf_extract_figures.execute(
         { file_path: SAMPLE_VALID_PDF, min_area: -100 },
         mockContext,
-      )
+      ).then((__r) => __r.content)
       expect(result).toContain("Error")
     })
   })
@@ -248,7 +248,7 @@ describe("pdf_extract_figures tool", () => {
       const result = await tools.pdf_extract_figures.execute(
         { file_path: SAMPLE_VALID_PDF },
         mockContext,
-      )
+      ).then((__r) => __r.content)
 
       expect(result).toContain("Python3")
       expect(result).toContain("not available")
@@ -269,7 +269,7 @@ describe("pdf_extract_figures tool", () => {
       const result = await tools.pdf_extract_figures.execute(
         { file_path: SAMPLE_VALID_PDF },
         mockContext,
-      )
+      ).then((__r) => __r.content)
 
       expect(result).toContain("Python3")
 
@@ -294,7 +294,7 @@ describe("pdf_extract_figures tool", () => {
       const result = await tools.pdf_extract_figures.execute(
         { file_path: SAMPLE_VALID_PDF },
         mockContext,
-      )
+      ).then((__r) => __r.content)
 
       expect(result).toContain("PyMuPDF")
       expect(result).toContain("pip install")
@@ -332,7 +332,7 @@ describe("pdf_extract_figures tool", () => {
       const result = await tools.pdf_extract_figures.execute(
         { file_path: SAMPLE_VALID_PDF },
         mockContext,
-      )
+      ).then((__r) => __r.content)
 
       const parsed = JSON.parse(result)
       expect(parsed).toHaveProperty("pdf_path")
@@ -363,7 +363,7 @@ describe("pdf_extract_figures tool", () => {
       const result = await tools.pdf_extract_figures.execute(
         { file_path: SAMPLE_VALID_PDF },
         mockContext,
-      )
+      ).then((__r) => __r.content)
 
       expect(result).toContain("Error")
       expect(result).toContain("exit code")
@@ -398,7 +398,7 @@ describe("pdf_extract_figures tool", () => {
       await tools.pdf_extract_figures.execute(
         { file_path: SAMPLE_VALID_PDF, output_dir: SAMPLE_OUTPUT_DIR },
         mockContext,
-      )
+      ).then((__r) => __r.content)
 
       // Verify the python3 script was called with correct args
       expect(capturedArgs[0]).toBe("python3")
@@ -438,7 +438,7 @@ describe("pdf_extract_figures tool", () => {
       await tools.pdf_extract_figures.execute(
         { file_path: SAMPLE_VALID_PDF, page: 3 },
         mockContext,
-      )
+      ).then((__r) => __r.content)
 
       const payload = JSON.parse(capturedPayload)
       expect(payload).toHaveProperty("page", 3)
@@ -478,7 +478,7 @@ describe("pdf_extract_figures tool", () => {
           json_only: true,
         },
         mockContext,
-      )
+      ).then((__r) => __r.content)
 
       const payload = JSON.parse(capturedPayload)
       expect(payload).toHaveProperty("min_width", 100)

@@ -36,6 +36,8 @@ import { TddEnforcerConfigSchema } from "./tdd-enforcer"
 import { TerminalConfigSchema } from "./terminal"
 import { TmuxConfigSchema } from "./tmux"
 import { ToolGatingConfigSchema } from "./tool-gating"
+import { McpConfigSchema } from "./v2-mcp"
+import { PermissionsConfigSchema } from "./v2-permissions"
 import { WebsearchConfigSchema } from "./websearch"
 
 export const MatrixxConfigSchema = z.object({
@@ -64,6 +66,12 @@ export const MatrixxConfigSchema = z.object({
    * act on. The key itself stays, and is honoured for tool names OpenCode
    * still registers. */
   disabled_tools: z.array(z.string()).optional(),
+  /** V2 plugin refs — additive; the V1 single-plugin load path is unchanged. */
+  plugins: z.array(z.string()).optional(),
+  /** V2 `mcp.servers.*` registry — additive to the V1 built-in MCP list. */
+  mcp: McpConfigSchema.optional(),
+  /** V2 ordered permission lists (allow/deny/ask). Deny-precedence is enforced in Wave 6. */
+  permissions: PermissionsConfigSchema.optional(),
   agents: AgentOverridesSchema.optional(),
   categories: CategoriesConfigSchema.optional(),
   morpheus_agent: MorpheusAgentConfigSchema.optional(),

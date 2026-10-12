@@ -1,12 +1,12 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import { findNearestMessageWithFields, findNearestMessageWithFieldsFromSDK } from "../features/hook-message-injector"
 import { getSessionAgent } from "../features/session-state"
+import type { PluginContext } from "../plugin/types"
 import { getAgentConfigKey } from "./agent-display-names"
 import { log } from "./logger"
 import { getMessageDir } from "./opencode-message-dir"
 import { isSqliteBackend } from "./opencode-storage-detection"
 
-export async function isCallerOrchestrator(sessionID?: string, client?: PluginInput["client"]): Promise<boolean> {
+export async function isCallerOrchestrator(sessionID?: string, client?: PluginContext["client"]): Promise<boolean> {
   if (!sessionID) return false
 
   // In-memory session agent is already authoritative for the live session

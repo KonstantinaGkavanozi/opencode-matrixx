@@ -51,7 +51,7 @@ describe("plan_list progress enrichment", () => {
     const listTool = createPlanListTool()
 
     //#when list
-    const listed = JSON.parse(await listTool.execute({}, testContext(testDir))) as { plans: ListedPlan[] }
+    const listed = JSON.parse(await listTool.execute({}, testContext(testDir)).then((__r) => __r.content)) as { plans: ListedPlan[] }
 
     //#then every entry has progress and the legacy fields survive
     expect(listed.plans.length).toBe(1)
@@ -84,7 +84,7 @@ describe("plan_list progress enrichment", () => {
     const listTool = createPlanListTool()
 
     //#when list
-    const listed = JSON.parse(await listTool.execute({}, testContext(testDir))) as { plans: ListedPlan[] }
+    const listed = JSON.parse(await listTool.execute({}, testContext(testDir)).then((__r) => __r.content)) as { plans: ListedPlan[] }
     const entry = listed.plans.find((p) => p.fileName === "enforce-plan-tools-only-access.md")
     const expected = getPlanProgress(entry?.filePath ?? "")
 
@@ -103,7 +103,7 @@ describe("plan_list progress enrichment", () => {
     const listTool = createPlanListTool()
 
     //#when list
-    const listed = JSON.parse(await listTool.execute({}, testContext(testDir))) as { plans: ListedPlan[]; error?: string }
+    const listed = JSON.parse(await listTool.execute({}, testContext(testDir)).then((__r) => __r.content)) as { plans: ListedPlan[]; error?: string }
 
     //#then listing survives, oversized entry is flagged, dotted excluded
     expect(listed.error).toBeUndefined()
@@ -197,7 +197,7 @@ describe("plan_list progress enrichment", () => {
     const listTool = createPlanListTool()
 
     //#when list
-    const listed = JSON.parse(await listTool.execute({}, testContext(testDir))) as { plans: ListedPlan[] }
+    const listed = JSON.parse(await listTool.execute({}, testContext(testDir)).then((__r) => __r.content)) as { plans: ListedPlan[] }
     const entry = listed.plans.find((p) => p.fileName === "empty-plan.md")
 
     //#then total is zero and needsTriage is set

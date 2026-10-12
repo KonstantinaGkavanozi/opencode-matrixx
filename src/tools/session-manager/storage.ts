@@ -1,7 +1,6 @@
 import { existsSync } from "node:fs"
 import { readdir, readFile } from "node:fs/promises"
 import { join } from "node:path"
-import type { PluginInput } from "@opencode-ai/plugin"
 import type { MatrixxConfig } from "../../config/schema"
 import { readSessionTasks } from "../../features/task-session-scope"
 import { normalizeSDKResponse } from "../../shared"
@@ -15,13 +14,15 @@ interface GetMainSessionsOptions {
 }
 
 // SDK client reference for beta mode
-let sdkClient: PluginInput["client"] | null = null
+type SdkClient = ReturnType<typeof import("@opencode-ai/sdk").createOpencodeClient>
+let sdkClient: SdkClient | null = null
 
+// Directory and config for the task store, held at module scope so every reader
+// (session list, session info, todo diagnostics) resolves the same project store.
 let storageDirectory: string | undefined
-
 let pluginConfig: Partial<MatrixxConfig> | undefined
 
-export function setStorageClient(client: PluginInput["client"]): void {
+export function setStorageClient(client: SdkClient): void {
   sdkClient = client
 }
 

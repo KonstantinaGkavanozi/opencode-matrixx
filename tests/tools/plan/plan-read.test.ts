@@ -64,7 +64,7 @@ describe("plan_read single-format contract", () => {
     writePlan(testDir, "sample-plan.md", "# Title\nline2\n- [ ] 1. Do thing\n")
     //#when read with defaults
     const res = JSON.parse(
-      await tool.execute({ filePath: ".matrixx/plans/sample-plan.md" }, testContext(testDir)),
+      await tool.execute({ filePath: ".matrixx/plans/sample-plan.md" }, testContext(testDir)).then((__r) => __r.content),
     )
     //#then only hashline is present
     expect("hashline" in res).toBe(true)
@@ -78,7 +78,7 @@ describe("plan_read single-format contract", () => {
     writePlan(testDir, "sample-plan.md", "# Title\nline2\n- [ ] 1. Do thing\n")
     //#when read with content format
     const res = JSON.parse(
-      await tool.execute({ filePath: ".matrixx/plans/sample-plan.md", format: "content" }, testContext(testDir)),
+      await tool.execute({ filePath: ".matrixx/plans/sample-plan.md", format: "content" }, testContext(testDir)).then((__r) => __r.content),
     )
     //#then only content is present
     expect("content" in res).toBe(true)
@@ -91,7 +91,7 @@ describe("plan_read single-format contract", () => {
     writePlan(testDir, "near-cap-plan.md", buildNearCapContent())
     //#when read with the default format
     const res = JSON.parse(
-      await tool.execute({ filePath: ".matrixx/plans/near-cap-plan.md" }, testContext(testDir)),
+      await tool.execute({ filePath: ".matrixx/plans/evolution-advancement-proposal.md" }, testContext(testDir)).then((__r) => __r.content),
     )
     //#then the selected format key is present and the rendered payload fits in true bytes
     expect(res.truncated).toBeUndefined()
@@ -105,7 +105,7 @@ describe("plan_read single-format contract", () => {
     writePlan(testDir, "over-cap-plan.md", buildOverCapContent())
     //#when read with the default format
     const res = JSON.parse(
-      await tool.execute({ filePath: ".matrixx/plans/over-cap-plan.md" }, testContext(testDir)),
+      await tool.execute({ filePath: ".matrixx/plans/over-cap-plan.md" }, testContext(testDir)).then((__r) => __r.content),
     )
     //#then a truncation envelope with neither payload key
     expect(res.truncated).toBe(true)
@@ -121,7 +121,7 @@ describe("plan_read single-format contract", () => {
     writePlan(testDir, "over-cap-plan.md", buildOverCapContent())
     //#when read, forcing truncation
     const res = JSON.parse(
-      await tool.execute({ filePath: ".matrixx/plans/over-cap-plan.md" }, testContext(testDir)),
+      await tool.execute({ filePath: ".matrixx/plans/over-cap-plan.md" }, testContext(testDir)).then((__r) => __r.content),
     )
     //#then the outline exposes absolute anchors for sections and tasks
     const section = res.outline.find((entry: { level: number; text: string }) => entry.level === 2)
@@ -137,7 +137,7 @@ describe("plan_read single-format contract", () => {
     writePlan(testDir, "huge-plan.md", "x".repeat(MAX_PLAN_FILE_BYTES + 100))
     //#when read
     const res = JSON.parse(
-      await tool.execute({ filePath: ".matrixx/plans/huge-plan.md" }, testContext(testDir)),
+      await tool.execute({ filePath: ".matrixx/plans/huge-plan.md" }, testContext(testDir)).then((__r) => __r.content),
     )
     //#then the hard-cap error carries a hint
     expect(res.error).toBe("file_too_large")
@@ -153,7 +153,7 @@ describe("plan_read single-format contract", () => {
       await tool.execute(
         { filePath: ".matrixx/plans/page-plan.md", format: "hashline", offset: 3, limit: 2 },
         testContext(testDir),
-      ),
+      ).then((__r) => __r.content),
     )
     //#then exactly two lines with absolute anchors 3 and 4
     const hashLines = hashRes.hashline.split("\n")
@@ -168,7 +168,7 @@ describe("plan_read single-format contract", () => {
       await tool.execute(
         { filePath: ".matrixx/plans/page-plan.md", format: "content", offset: 3, limit: 2 },
         testContext(testDir),
-      ),
+      ).then((__r) => __r.content),
     )
     //#then only the selected lines are returned
     expect(contentRes.content).toBe("line3\nline4")

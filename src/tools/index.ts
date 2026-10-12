@@ -39,8 +39,8 @@ export { createSlashcommandTool, discoverCommandsSync } from "./slashcommand"
 export { createStalenessGapCheckerTool } from "./staleness-gap-checker"
 export { lspManager }
 
-import type { PluginInput, ToolDefinition } from "@opencode-ai/plugin"
 import type { BackgroundManager } from "../features/background-agent"
+import type { V2ToolsRecord } from "../plugin/types"
 import {
   type BackgroundCancelClient,
   type BackgroundOutputManager,
@@ -49,8 +49,6 @@ import {
   createBackgroundRevive,
   createBackgroundWaitAll,
 } from "./background-task"
-
-type OpencodeClient = PluginInput["client"]
 
 export { createAssemblyTool } from "./assembly"
 export { createDelegateTask } from "./delegate-task"
@@ -66,9 +64,9 @@ export {
 
 export function createBackgroundTools(
   manager: BackgroundManager,
-  client: OpencodeClient,
+  client: ReturnType<typeof import("@opencode-ai/sdk").createOpencodeClient>,
   directory: string,
-): Record<string, ToolDefinition> {
+): V2ToolsRecord {
   const outputManager: BackgroundOutputManager = manager
   const cancelClient: BackgroundCancelClient = client
   return {
@@ -79,7 +77,7 @@ export function createBackgroundTools(
   }
 }
 
-export const builtinTools: Record<string, ToolDefinition> = {
+export const builtinTools: V2ToolsRecord = {
   lsp_goto_definition,
   lsp_find_references,
   lsp_symbols,

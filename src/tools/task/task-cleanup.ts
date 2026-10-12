@@ -1,10 +1,10 @@
 import { existsSync, readdirSync, readFileSync, unlinkSync } from "node:fs"
 import { join } from "node:path"
-import type { PluginInput } from "@opencode-ai/plugin"
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import { z } from "zod"
 import type { MatrixxConfig } from "../../config/schema"
 import { getTaskDir } from "../../features/task-storage/storage"
 import { getStaleAfterMs, isTaskStale } from "../../hooks/task-continuation-enforcer/staleness"
+import type { V2ToolDefinition } from "../../plugin/types"
 import { log } from "../../shared/logger"
 
 const TERMINAL_STATUSES = new Set(["completed", "deleted"])
@@ -44,9 +44,10 @@ function getTaskTimestamp(task: unknown): number {
 
 export function createTaskCleanupTool(
   config: Partial<MatrixxConfig>,
-  ctx?: PluginInput,
-): ToolDefinition {
-  return tool({
+  ctx?: { directory?: string },
+): V2ToolDefinition {
+  return {
+    name: "task_cleanup",
     description: `[TRACKING — local progress records only. Spawns nothing, executes nothing.]
 Delete reclaimable task files from storage.
 
@@ -60,12 +61,11 @@ tasks.stale_after_hours (default 24h). Staleness uses file mtime; olderThan on t
 tasks uses the record's own timestamp. Active tasks are never reclaimed without stale=true.
 
 Returns counts: {deleted, remaining, deletedIds}`,
-    args: {
-      olderThan: tool.schema.string().optional().describe('Only delete tasks older than duration (e.g. "7d", "24h", "30m"). For terminal tasks this uses the record timestamp; in stale mode it sets the mtime threshold.'),
-      all: tool.schema.boolean().optional().describe("Delete all reclaimable tasks (default true when olderThan not set)"),
-      stale: tool.schema.boolean().optional().describe("Also reclaim abandoned pending/in_progress tasks older than the threshold (default false)"),
-    },
-    execute: async (args: Record<string, unknown>, context?: { sessionID: string }): Promise<string> => {
+    input: z.object({
+      olderThan: z.string().optional().describe('Only delete completed tasks older than duration (e.g. "7d", "24h", "30m")'),
+      all: z.boolean().optional().describe("Delete all completed tasks (default true when olderThan not set)"),
+    }),
+    execute: async (args: Record<string, unknown>, context?: { sessionID: string }) => {
       try {
         const olderThan = args.olderThan as string | undefined
 
@@ -73,22 +73,22 @@ Returns counts: {deleted, remaining, deletedIds}`,
         if (olderThan !== undefined) {
           const parsed = parseOlderThan(olderThan)
           if (parsed === null) {
-            return JSON.stringify({
+            return { content: await (JSON.stringify({
               error: "validation_error",
               message: `Invalid olderThan format: "${olderThan}". Expected e.g. "7d", "24h", "30m"`,
-            })
+            })) }
           }
           olderThanMs = parsed
         }
 
         const directory =
-          ((context as unknown as Record<string, unknown>)?.directory as string | undefined) ??
-          ((ctx as unknown as Record<string, unknown>)?.directory as string | undefined) ??
+          ((context as unknown as { directory?: string })?.directory as string | undefined) ??
+          ((ctx as unknown as { directory?: string })?.directory as string | undefined) ??
           process.cwd()
         const taskDir = getTaskDir(config, directory)
 
         if (!existsSync(taskDir)) {
-          return JSON.stringify({ deleted: 0, remaining: 0, deletedIds: [] })
+          return { content: await (JSON.stringify({ deleted: 0, remaining: 0, deletedIds: [] })) }
         }
 
         const files = readdirSync(taskDir).filter((f) => f.endsWith(".json") && f.startsWith("T-"))
@@ -128,14 +128,14 @@ Returns counts: {deleted, remaining, deletedIds}`,
           }
         }
 
-        return JSON.stringify({
+        return { content: await (JSON.stringify({
           deleted: deletedIds.length,
           remaining: total - deletedIds.length,
           deletedIds,
-        })
+        })) }
       } catch (error) {
-        return JSON.stringify({ error: "internal_error", message: error instanceof Error ? error.message : String(error) })
+        return { content: await (JSON.stringify({ error: "internal_error", message: error instanceof Error ? error.message : String(error) })) }
       }
     },
-  })
+  }
 }
