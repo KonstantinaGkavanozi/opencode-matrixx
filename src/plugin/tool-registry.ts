@@ -54,6 +54,7 @@ import {
 import { createPlanTasksTool } from "../tools/plan"
 import { createTerminalTool } from "../tools/terminal"
 import type { SkillContext } from "./skill-context"
+import { toV1ToolsRecord } from "./tool-definition"
 import {
   isConstructAgentEnabled,
   shouldEnableBddTools,
@@ -65,10 +66,18 @@ import {
   shouldEnablePresetTools,
   shouldEnableSessionCleanup,
 } from "./tool-gating"
-import type { PluginContext, ToolsRecord } from "./types"
+import type {
+  PluginContext,
+  ToolsRecord,
+  V2PluginContext,
+  V2ToolDefinition,
+  V2ToolRegistration,
+  V2ToolsRecord,
+} from "./types"
 
 export type ToolRegistryResult = {
   filteredTools: ToolsRecord
+  v2Tools: V2ToolsRecord
   taskSystemEnabled: boolean
 }
 
@@ -92,6 +101,12 @@ export function createToolRegistry(args: {
   const presetToolsEnabled = shouldEnablePresetTools(toolGating?.preset_tools)
   const evolutionEnabled = shouldEnableEvolutionTool(pluginConfig.evolution?.enabled)
   const evolutionRecord = evolutionEnabled ? createEvolutionTool(ctx) : {}
+  const cycloptRecord: V2ToolsRecord = shouldEnableCycloptTools(
+    hasCycloptToken(pluginConfig.cyclopt),
+    toolGating?.cyclopt_tools,
+  )
+    ? createCycloptTools({ directory: ctx.directory, config: pluginConfig.cyclopt })
+    : {}
   const lookAt = lookAtEnabled ? createLookAt(ctx) : null
   const bddToolsRecord: Record<string, ToolDefinition> = bddEnabled
     ? {
@@ -101,16 +116,11 @@ export function createToolRegistry(args: {
         bdd_validate_contract: createBddValidateContractTool(),
       }
     : {}
-  const pdfFiguresRecord: Record<string, ToolDefinition> = pdfFiguresEnabled
-    ? { ...createPdfExtractFiguresTool() }
-    : {}
-  const cycloptRecord: Record<string, ToolDefinition> = shouldEnableCycloptTools(hasCycloptToken(pluginConfig.cyclopt), toolGating?.cyclopt_tools)
-    ? createCycloptTools({ directory: ctx.directory, config: pluginConfig.cyclopt })
-    : {}
-  const presetRecord: Record<string, ToolDefinition> = presetToolsEnabled
+  const pdfFiguresRecord: V2ToolsRecord = pdfFiguresEnabled ? { ...createPdfExtractFiguresTool() } : {}
+  const presetRecord: V2ToolsRecord = presetToolsEnabled
     ? { ...createPresetTool({ pluginConfig, directory: ctx.directory }) }
     : {}
-  const sessionCleanupRecord: Record<string, ToolDefinition> = shouldEnableSessionCleanup(
+  const sessionCleanupRecord: V2ToolsRecord = shouldEnableSessionCleanup(
     toolGating?.session_cleanup,
   )
     ? { session_cleanup: createSessionCleanupTool(ctx) }
@@ -164,7 +174,7 @@ export function createToolRegistry(args: {
   })
 
   const taskSystemEnabled = isTaskSystemEnabled(pluginConfig)
-  const taskToolsRecord: Record<string, ToolDefinition> = taskSystemEnabled
+  const taskToolsRecord: Record<string, V2ToolDefinition> = taskSystemEnabled
     ? {
         task_create: createTaskCreateTool(pluginConfig, ctx),
         task_get: createTaskGetTool(pluginConfig, ctx),
@@ -174,12 +184,12 @@ export function createToolRegistry(args: {
       }
     : {}
   const hashlineEnabled = pluginConfig.experimental?.hashline_edit ?? false
-  const hashlineToolsRecord: Record<string, ToolDefinition> = hashlineEnabled
+  const hashlineToolsRecord: Record<string, V2ToolDefinition> = hashlineEnabled
     ? { edit: createHashlineEditTool(ctx) }
     : {}
 
   const planCap = resolvePlanCap(pluginConfig)
-  const planToolsRecord: Record<string, ToolDefinition> = {
+  const planToolsRecord: Record<string, V2ToolDefinition> = {
     plan_create: createPlanCreateTool(ctx, planCap),
     plan_read: createPlanReadTool(ctx, planCap),
     plan_list: createPlanListTool(ctx, planCap),
@@ -196,7 +206,7 @@ export function createToolRegistry(args: {
       })
     : null
 
-  const allTools: Record<string, ToolDefinition> = {
+  const v2Tools: V2ToolsRecord = {
     ...builtinTools,
     ...(managers.terminalService && managers.terminalPresentation ? { terminal: createTerminalTool(managers.terminalService, managers.terminalPresentation) } : {}),
     ...createGrepTools(ctx),
@@ -215,23 +225,49 @@ export function createToolRegistry(args: {
     ...presetRecord,
     ...sessionCleanupRecord,
     ...backgroundTools,
-    ...(lookAt ? { look_at: lookAt } : {}),
-    task: delegateTask,
-    skill: skillTool,
-    slashcommand: slashcommandTool,
     interactive_bash,
     ...taskToolsRecord,
     ...hashlineToolsRecord,
     ...planToolsRecord,
-    ...(assemblyTool ? { assembly: assemblyTool } : {}),
-    ...bddToolsRecord,
     ...evolutionRecord,
   }
 
+  const legacyV1Tools: ToolsRecord = {
+    ...(lookAt ? { look_at: lookAt } : {}),
+    task: delegateTask,
+    skill: skillTool,
+    slashcommand: slashcommandTool,
+    ...(assemblyTool ? { assembly: assemblyTool } : {}),
+    ...bddToolsRecord,
+  }
+
+  const allTools: ToolsRecord = { ...legacyV1Tools, ...toV1ToolsRecord(v2Tools) }
+
   const filteredTools = filterDisabledTools(allTools, pluginConfig.disabled_tools)
+  const enabledNames = new Set(Object.keys(filteredTools))
+  const filteredV2Tools: V2ToolsRecord = {}
+  for (const [name, tool] of Object.entries(v2Tools)) {
+    if (enabledNames.has(name)) filteredV2Tools[name] = tool
+  }
 
   return {
     filteredTools,
+    v2Tools: filteredV2Tools,
     taskSystemEnabled,
   }
+}
+
+/**
+ * Register V2-native tools through `ctx.tool.transform`. The supplied record is
+ * already the gated/filtered set, so conditional registration is preserved.
+ */
+export async function registerV2Tools(
+  ctx: V2PluginContext,
+  tools: V2ToolsRecord,
+): Promise<V2ToolRegistration> {
+  return ctx.tool.transform((editor) => {
+    for (const tool of Object.values(tools)) {
+      editor.add(tool)
+    }
+  })
 }

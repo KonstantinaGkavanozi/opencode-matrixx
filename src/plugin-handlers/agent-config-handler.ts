@@ -9,9 +9,9 @@ import type { MatrixxConfig } from "../config";
 import { log, migrateAgentConfig } from "../shared";
 import { type ContextModeConfigInput, getContextModeForPrompts, resolveGrepGlobUsable, setContextModeForPrompts } from "../shared/context-mode-enforcement";
 import { reorderAgentsByPriority } from "./agent-priority-order";
+import type { PluginComponents } from "./component-bundle";
 import { buildOracleAgentConfig } from "./oracle-agent-config-builder";
 import { buildPlanDemoteConfig } from "./plan-model-inheritance";
-import type { PluginComponents } from "./plugin-components-loader";
 
 // Module-level tool names cache, set once at startup by index.ts
 let _availableToolNames: string[] = []

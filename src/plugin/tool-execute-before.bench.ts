@@ -1,5 +1,5 @@
 /**
- * Task T1.1 benchmark for `tool.execute.before` handler.
+ * Task T1.1 benchmark for the pre-tool execution handler.
  *
  * After the 3-wave parallelization refactor:
  *   Wave 1 (4 hooks, parallel via Promise.all):         qualityGate,
@@ -16,8 +16,8 @@
  *                                                     mouseNotepad,
  *                                                     architectHook
  *
- * Total: 13 calls per iteration (oracleMdOnly appears in both Wave 2 and
- * Wave 3; the handler calls `hooks.oracleMdOnly?.["tool.execute.before"]`
+ * Total: 14 calls per iteration (oracleMdOnly appears in both Wave 2 and
+ * Wave 3; the handler calls `hooks.oracleMdOnly?.[V1_HOOK_KEYS.toolExecuteBefore]`
  * twice — once in Wave 2 and once in Wave 3 — so the bench must build a
  * SINGLE oracleMdOnly hook that records both invocations).
  *
@@ -46,6 +46,7 @@
  * to the workflow files.
  */
 import { describe, expect, test } from "bun:test"
+import { V1_HOOK_KEYS } from "../config/schema/hooks-v1-keys"
 import { createToolExecuteBeforeHandler } from "./tool-execute-before"
 
 type HookName = string
@@ -113,7 +114,7 @@ function buildHooks(storage: BenchStorage): Record<string, unknown> {
   for (const name of ALL_NAMES) {
     const nameIdx = NAME_TO_IDX.get(name) ?? 0
     hooks[name] = {
-      "tool.execute.before": async () => {
+      [V1_HOOK_KEYS.toolExecuteBefore]: async () => {
         const slot = writeHead++
         storage.nameIdx[slot] = nameIdx
         storage.globalOrder[slot] = slot
@@ -132,7 +133,7 @@ function percentile(sortedAsc: ArrayLike<number>, p: number): number {
   return sortedAsc[idx]
 }
 
-describe("tool.execute.before T1.1 (3-wave parallelized)", () => {
+describe("pre-tool execution T1.1 (3-wave parallelized)", () => {
   test(
     "1000 sequential calls: latency profile + wave ordering invariants",
     async () => {

@@ -1,5 +1,5 @@
-import type { PluginInput } from "@opencode-ai/plugin"
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import { z } from "zod"
+import type { PluginContext, V2ToolDefinition } from "../../plugin/types"
 import { log } from "../../shared"
 import { normalizeSDKResponse } from "../../shared/normalize-sdk-response"
 import { isRecord } from "../../shared/record-type-guard"
@@ -80,19 +80,14 @@ function summarize(rows: SessionRow[], apply: boolean): string {
   return `Deleting ${rows.length} leaked session(s)...`
 }
 
-export function createSessionCleanupTool(ctx: PluginInput): ToolDefinition {
-  return tool({
+export function createSessionCleanupTool(ctx: PluginContext): V2ToolDefinition {
+  return {
+    name: "session_cleanup",
     description: SESSION_CLEANUP_DESCRIPTION,
-    args: {
-      apply: tool.schema
-        .boolean()
-        .optional()
-        .describe("Actually delete. Defaults to false (dry run)."),
-      include_look_at: tool.schema
-        .boolean()
-        .optional()
-        .describe("Also match 'look_at: *' sessions. Defaults to false."),
-    },
+    input: z.object({
+      apply: z.boolean().optional().describe("Actually delete. Defaults to false (dry run)."),
+      include_look_at: z.boolean().optional().describe("Also match 'look_at: *' sessions. Defaults to false."),
+    }),
     async execute(args) {
       const apply = args.apply === true
       const includeLookAt = args.include_look_at === true
@@ -103,8 +98,8 @@ export function createSessionCleanupTool(ctx: PluginInput): ToolDefinition {
         const listed = await ctx.client.session.list()
         const leaked = collectLeaked(listed, includeLookAt)
 
-        if (leaked.length === 0) return summarize(leaked, apply)
-        if (!apply) return summarize(leaked, apply)
+        if (leaked.length === 0) return { content: summarize(leaked, apply) }
+        if (!apply) return { content: summarize(leaked, apply) }
 
         const failures: string[] = []
         let deleted = 0
@@ -137,14 +132,14 @@ export function createSessionCleanupTool(ctx: PluginInput): ToolDefinition {
           summary.push(`${failures.length} failed:`)
           summary.push(...failures.map((line) => `  - ${line}`))
         }
-        return summary.join("\n")
+        return { content: summary.join("\n") }
       } catch (error) {
         // A listing failure must never be reported as "nothing found" — that
         // would look like success while doing nothing.
         const message = error instanceof Error ? error.message : String(error)
         log("[session-cleanup] failed", { message })
-        return `Error: could not list sessions from the OpenCode server: ${message}`
+        return { content: `Error: could not list sessions from the OpenCode server: ${message}` }
       }
     },
-  })
+  }
 }

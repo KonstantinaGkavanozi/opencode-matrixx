@@ -1,9 +1,9 @@
 import { existsSync, statSync } from "node:fs"
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import { z } from "zod"
 import { countPlanProgressFromContent, readPlanFile } from "../../features/mission-state"
 import { readPlanFileSpan } from "../../features/mission-state/plan-storage"
 import { parsePlanContract } from "../../features/plan-contract"
-import type { PluginContext } from "../../plugin/types"
+import type { PluginContext, V2ToolDefinition } from "../../plugin/types"
 import { MAX_PLAN_FILE_BYTES, MAX_PLAN_READ_RENDERED_BYTES } from "./constants"
 import { classifyReadRefusal, fileTooLargePayload, readFailedPayload } from "./error-codes"
 import { clampManifestToRenderedBudget } from "./plan-tasks-clamp"
@@ -27,28 +27,32 @@ function truncationHint(shown: number, total: number): string {
   return `Showing the first ${shown} of ${total} tasks to fit the ${MAX_PLAN_READ_RENDERED_BYTES}-byte rendered budget — read the rest with plan_read using a section selector (e.g. section: 'todos')`
 }
 
-export function createPlanTasksTool(ctx?: PluginContext, cap: number = MAX_PLAN_FILE_BYTES): ToolDefinition {
-  return tool({
+export function createPlanTasksTool(
+  ctx?: PluginContext,
+  cap: number = MAX_PLAN_FILE_BYTES,
+): V2ToolDefinition {
+  return {
+    name: "plan_tasks",
     description: `Return a compact manifest for a plan file: filePath, progress (total/completed/remaining/isComplete/needsTriage), numbered tasks (n, title, checked, line, LINE#ID anchor) and definition-of-done lines. Does NOT emit the plan body — use plan_read for content. A plan over the ${cap}-byte cap still yields a manifest, marked degraded:true, because this tool never reads the body into your context; the manifest itself is clamped to ${MAX_PLAN_READ_RENDERED_BYTES} bytes and reports what it dropped. The cap is still enforced on every write.`,
-    args: {
-      filePath: tool.schema
+    input: z.object({
+      filePath: z
         .string()
         .describe("Path to plan file (must be inside .matrixx/plans, kebab-case .md)"),
-    },
+    }),
     execute: async (args, context) => {
       try {
         const filePath = args.filePath as string
         const directory = resolveDirectory(
-          (context as Record<string, unknown>)?.directory,
-          (ctx as unknown as Record<string, unknown>)?.directory,
+          (context as { directory?: string })?.directory,
+          (ctx as unknown as { directory?: string })?.directory,
         )
         const validation = validatePlanFilePath(filePath, directory)
         if ("error" in validation) {
-          return JSON.stringify({ error: "invalid_file_path", message: validation.error })
+          return { content: JSON.stringify({ error: "invalid_file_path", message: validation.error }) }
         }
         const resolved = validation.resolved
         if (!existsSync(resolved)) {
-          return JSON.stringify({ error: "file_not_found", message: `File not found: ${resolved}` })
+          return { content: JSON.stringify({ error: "file_not_found", message: `File not found: ${resolved}` }) }
         }
         const probe = sizeOverHardCap(resolved, cap)
         // The cap is a CEILING on what is HANDED BACK, never on what may be read.
@@ -59,12 +63,15 @@ export function createPlanTasksTool(ctx?: PluginContext, cap: number = MAX_PLAN_
         if (content === null) {
           // Over the cap, the stat already succeeded, so a null span read can only be
           // a real read failure (stat needs no read permission) — never a size refusal.
-          if (overCap) return readFailedPayload(resolved)
+          if (overCap) return { content: readFailedPayload(resolved) }
           const defensive = sizeOverHardCap(resolved, cap)
           const refusal = classifyReadRefusal({ sizeOverCap: defensive.size, errno: defensive.errno })
-          return refusal === "file_too_large" && defensive.size !== null
-            ? fileTooLargePayload(resolved, defensive.size, cap)
-            : readFailedPayload(resolved, defensive.errno ?? undefined)
+          return {
+            content:
+              refusal === "file_too_large" && defensive.size !== null
+                ? fileTooLargePayload(resolved, defensive.size, cap)
+                : readFailedPayload(resolved, defensive.errno ?? undefined),
+          }
         }
         const progress = countPlanProgressFromContent(content)
         const contract = parsePlanContract(content)
@@ -76,12 +83,14 @@ export function createPlanTasksTool(ctx?: PluginContext, cap: number = MAX_PLAN_
           ...(progress.needsTriage ? { needsTriage: true } : {}),
         })
         if (!overCap) {
-          return JSON.stringify({
-            filePath: resolved,
-            progress: buildProgress(),
-            tasks: contract.tasks,
-            dod: contract.dod,
-          })
+          return {
+            content: JSON.stringify({
+              filePath: resolved,
+              progress: buildProgress(),
+              tasks: contract.tasks,
+              dod: contract.dod,
+            }),
+          }
         }
         const degraded = {
           reason: "file_over_cap",
@@ -108,11 +117,11 @@ export function createPlanTasksTool(ctx?: PluginContext, cap: number = MAX_PLAN_
             ...(view.dodTruncated ? { dodTruncated: view.dodTruncated } : {}),
           }),
         )
-        return JSON.stringify(payload)
+        return { content: JSON.stringify(payload) }
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error)
-        return JSON.stringify({ error: "internal_error", message })
+        return { content: JSON.stringify({ error: "internal_error", message }) }
       }
     },
-  })
+  }
 }

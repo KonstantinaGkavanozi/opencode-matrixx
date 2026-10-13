@@ -1,9 +1,11 @@
-import type { PluginInput } from "@opencode-ai/plugin"
 import type { MatrixxConfig } from "../../config"
+import { V1_HOOK_KEYS } from "../../config/schema/hooks-v1-keys"
+import type { PluginContext } from "../../plugin/types"
 import { log } from "../../shared"
 import { RTK_BINARY_NAME, RTK_REWRITE_COMMAND } from "./constants"
+import { findMissingWrappedTool } from "./unix-tool-guard"
 
-export function createRtkBashRewriterHook(_ctx: PluginInput, config: MatrixxConfig) {
+export function createRtkBashRewriterHook(_ctx: PluginContext, config: MatrixxConfig) {
   const rtkConfig = config.rtk
   const binaryPath = rtkConfig?.binary_path ?? RTK_BINARY_NAME
 
@@ -14,7 +16,7 @@ export function createRtkBashRewriterHook(_ctx: PluginInput, config: MatrixxConf
   }
 
   return {
-    "tool.execute.before": async (
+    [V1_HOOK_KEYS.toolExecuteBefore]: async (
       input: { tool: string; sessionID: string; callID: string },
       output: { args: Record<string, unknown>; message?: string }
     ): Promise<void> => {
@@ -50,6 +52,12 @@ export function createRtkBashRewriterHook(_ctx: PluginInput, config: MatrixxConf
 
         const rewritten = await new Response(proc.stdout).text()
         const trimmed = rewritten.trim()
+
+        const missingTool = findMissingWrappedTool(trimmed, Bun.which)
+        if (missingTool) {
+          log(`[rtk-bash-rewriter] Skipping rewrite: '${missingTool}' not found on PATH (rtk would fail). Command: '${command}'`)
+          return
+        }
 
         // Only mutate if rewrite produced a different command
         if (trimmed && trimmed !== command) {

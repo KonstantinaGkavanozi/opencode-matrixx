@@ -2,7 +2,7 @@
 
 ## OVERVIEW
 
-15 AI agents with factory functions, fallback chains, and model-specific prompt variants. Each agent has metadata (category, cost, triggers) and configurable tool restrictions.
+16 AI agents with factory functions, fallback chains, and model-specific prompt variants. Each agent has metadata (category, cost, triggers) and configurable tool restrictions.
 
 `Smith` is the **pre-execution** reviewer (binary `[OKAY]`/`[REJECT]`, max 3 blockers). `Auditor` is the **post-execution** reviewer (Summary / Score / Complexity / Required Effort), invoked **only** by the explicit `/plan-review` command — never automatically, and never on a hook, idle, or completion trigger.
 
@@ -28,6 +28,7 @@ agents/
 │   └── index.ts
 ├── cipher.ts                    # DSL engineering specialist
 ├── sentinel.ts                 # Security auditor (220 lines)
+├── tank/                       # Regression validator (subagent): agent.ts, system-prompt.ts, permissions.ts (test-only edits)
 ├── cyclopt.ts                  # Cyclopt code-quality analyst (report-only; needs a Cyclopt token: user-config cyclopt.api_token or CYCLOPT_API_TOKEN)
 ├── merovingian.ts              # High-IQ consultation
 ├── smith.ts                    # Plan validator (244 lines) — pre-execution reviewer
@@ -61,6 +62,7 @@ agents/
 | Cipher | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> → <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Sentinel | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> → <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Cyclopt | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
+| Tank | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Merovingian | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Smith | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
 | Auditor | <provider>/<model> | 0.1 | <provider>/<model> → <provider>/<model> | EXPENSIVE |
@@ -101,6 +103,7 @@ An agent receives `task_*` iff `MODE ∈ {primary, all}` and its work is multi-s
 | Auditor | 32k budget tokens | reasoningEffort: "medium" |
 | Sentinel | 32k budget tokens | reasoningEffort: "medium" |
 | Cyclopt | 8k budget tokens | reasoningEffort: "medium" |
+| Tank | 4k budget tokens | reasoningEffort: "medium" |
 | Mouse | 32k budget tokens | reasoningEffort: "medium" |
 
 ## HOW TO ADD

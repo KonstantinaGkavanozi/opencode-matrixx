@@ -1,4 +1,5 @@
-import { type ToolDefinition, tool } from "@opencode-ai/plugin/tool"
+import { z } from "zod"
+import type { V2ToolDefinition } from "../../plugin/types"
 import { getPlatform } from "../../shared/command-translator"
 import { log } from "../../shared/logger"
 import { getTmuxUnavailableMessage } from "../../shared/tmux/tmux-compat"
@@ -50,11 +51,12 @@ export function tokenizeCommand(cmd: string): string[] {
   return tokens
 }
 
-export const interactive_bash: ToolDefinition = tool({
+export const interactive_bash: V2ToolDefinition = {
+  name: "interactive_bash",
   description: INTERACTIVE_BASH_DESCRIPTION,
-  args: {
-    tmux_command: tool.schema.string().describe("The tmux command to execute (without 'tmux' prefix)"),
-  },
+  input: z.object({
+    tmux_command: z.string().describe("The tmux command to execute (without 'tmux' prefix)"),
+  }),
   execute: async (args) => {
     try {
       const cachedTmuxPath = getCachedTmuxPath()
@@ -62,13 +64,13 @@ export const interactive_bash: ToolDefinition = tool({
         getPlatform(),
         cachedTmuxPath !== null || Bun.which("tmux") !== null,
       )
-      if (unavailable) return unavailable
+      if (unavailable) return { content: unavailable }
       const tmuxPath = cachedTmuxPath ?? "tmux"
 
       const parts = tokenizeCommand(args.tmux_command)
 
       if (parts.length === 0) {
-        return "Error: Empty tmux command"
+        return { content: "Error: Empty tmux command" }
       }
 
       const subcommand = parts[0].toLowerCase()
@@ -83,7 +85,8 @@ export const interactive_bash: ToolDefinition = tool({
           }
         }
 
-        return `Error: '${parts[0]}' is blocked in interactive_bash.
+        return {
+          content: `Error: '${parts[0]}' is blocked in interactive_bash.
 
 **USE BASH TOOL INSTEAD:**
 
@@ -95,7 +98,8 @@ tmux capture-pane -p -t ${sessionName}
 tmux capture-pane -p -t ${sessionName} -S -1000
 \`\`\`
 
-The Bash tool can execute these commands directly. Do NOT retry with interactive_bash.`
+The Bash tool can execute these commands directly. Do NOT retry with interactive_bash.`,
+        }
       }
 
       const proc = Bun.spawn([tmuxPath, ...parts], {
@@ -133,12 +137,12 @@ The Bash tool can execute these commands directly. Do NOT retry with interactive
       // Check exitCode properly - return error even if stderr is empty
       if (exitCode !== 0) {
         const errorMsg = stderr.trim() || `Command failed with exit code ${exitCode}`
-        return `Error: ${errorMsg}`
+        return { content: `Error: ${errorMsg}` }
       }
 
-      return stdout || "(no output)"
+      return { content: stdout || "(no output)" }
     } catch (e) {
-      return `Error: ${e instanceof Error ? e.message : String(e)}`
+      return { content: `Error: ${e instanceof Error ? e.message : String(e)}` }
     }
   },
-})
+}

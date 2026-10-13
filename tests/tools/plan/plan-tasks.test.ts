@@ -73,7 +73,7 @@ describe("plan_tasks compact manifest", () => {
     writePlan(testDir, "sample-plan.md", buildThirteenTaskPlan())
     //#when requested
     const res = JSON.parse(
-      await tool.execute({ filePath: ".matrixx/plans/sample-plan.md" }, testContext(testDir)),
+      await tool.execute({ filePath: ".matrixx/plans/sample-plan.md" }, testContext(testDir)).then((__r) => __r.content),
     ) as ManifestResult
     //#then the compact manifest shape is present and no raw payload leaks
     expect(res.filePath.endsWith("sample-plan.md")).toBe(true)
@@ -90,7 +90,7 @@ describe("plan_tasks compact manifest", () => {
     //#given a 13-task plan
     writePlan(testDir, "sample-plan.md", buildThirteenTaskPlan())
     //#when requested
-    const raw = await tool.execute({ filePath: ".matrixx/plans/sample-plan.md" }, testContext(testDir))
+    const raw = await tool.execute({ filePath: ".matrixx/plans/sample-plan.md" }, testContext(testDir)).then((__r) => __r.content)
     //#then the serialized manifest is compact
     expect(raw.length).toBeLessThan(8000)
   })
@@ -103,7 +103,7 @@ describe("plan_tasks compact manifest", () => {
     const expectedTotal = countPlanProgressFromContent(content).total
     //#when requested
     const res = JSON.parse(
-      await tool.execute({ filePath: ".matrixx/plans/evolution-advancement-proposal.md" }, testContext(testDir)),
+      await tool.execute({ filePath: ".matrixx/plans/evolution-advancement-proposal.md" }, testContext(testDir)).then((__r) => __r.content),
     ) as ManifestResult
     //#then the task list and progress derive from the same SSOT
     expect(res.tasks.length).toBe(expectedTotal)
@@ -116,7 +116,7 @@ describe("plan_tasks compact manifest", () => {
     writePlan(testDir, "sample-plan.md", buildThirteenTaskPlan())
     //#when requested
     const res = JSON.parse(
-      await tool.execute({ filePath: ".matrixx/plans/sample-plan.md" }, testContext(testDir)),
+      await tool.execute({ filePath: ".matrixx/plans/sample-plan.md" }, testContext(testDir)).then((__r) => __r.content),
     ) as ManifestResult
     //#then anchors are stable hashline references
     expect(res.tasks.length).toBe(13)
@@ -131,7 +131,7 @@ describe("plan_tasks compact manifest", () => {
     writePlan(testDir, "empty-plan.md", "# Empty\n\nNo tasks here yet.\n")
     //#when requested
     const res = JSON.parse(
-      await tool.execute({ filePath: ".matrixx/plans/empty-plan.md" }, testContext(testDir)),
+      await tool.execute({ filePath: ".matrixx/plans/empty-plan.md" }, testContext(testDir)).then((__r) => __r.content),
     ) as ManifestResult
     //#then the manifest flags the plan for triage
     expect(res.progress.total).toBe(0)
@@ -144,7 +144,7 @@ describe("plan_tasks compact manifest", () => {
     writePlan(testDir, "huge-plan.md", "x".repeat(MAX_PLAN_FILE_BYTES + 100))
     //#when requested
     const res = JSON.parse(
-      await tool.execute({ filePath: ".matrixx/plans/huge-plan.md" }, testContext(testDir)),
+      await tool.execute({ filePath: ".matrixx/plans/huge-plan.md" }, testContext(testDir)).then((__r) => __r.content),
     ) as ManifestResult
     //#then (Task 16 inverted the prior expectation: the cap is a ceiling on what is
     // handed back, not on what may be read, and this tool never emits the body.)
@@ -160,7 +160,7 @@ describe("plan_tasks compact manifest", () => {
     writePlan(testDir, "p2.2-generic-recovery-refactor.md", "x".repeat(MAX_PLAN_FILE_BYTES + 100))
     //#when requested
     const res = JSON.parse(
-      await tool.execute({ filePath: ".matrixx/plans/p2.2-generic-recovery-refactor.md" }, testContext(testDir)),
+      await tool.execute({ filePath: ".matrixx/plans/p2.2-generic-recovery-refactor.md" }, testContext(testDir)).then((__r) => __r.content),
     ) as ManifestResult
     //#then the name is rejected before size is ever considered
     expect(res.error).toBe("invalid_file_path")
@@ -171,7 +171,7 @@ describe("plan_tasks compact manifest", () => {
     //#given no such plan file
     //#when requested
     const res = JSON.parse(
-      await tool.execute({ filePath: ".matrixx/plans/does-not-exist.md" }, testContext(testDir)),
+      await tool.execute({ filePath: ".matrixx/plans/does-not-exist.md" }, testContext(testDir)).then((__r) => __r.content),
     ) as ManifestResult
     //#then a not-found envelope is returned
     expect(res.error).toBe("file_not_found")

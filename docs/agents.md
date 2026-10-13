@@ -2,7 +2,7 @@
 
 Matrixx orchestrates a team of specialized AI agents, each with distinct expertise, optimized models, and tool permissions. This is the canonical agent reference: user narrative up top (Morpheus, Keymaker, and teammates), architecture diagrams and delegation mechanics below.
 
-14 built-in agents (13 static in `agentSources` plus Oracle built dynamically, see `src/agents/builtin-agents.ts`; names in `BuiltinAgentNameSchema`, `src/config/schema/agent-names.ts`) plus Mouse, the dynamic category-spawned worker. For delegation flows, see [Orchestration](orchestration.md). For hook details, see [Hooks](hooks.md). For the complete agent table with models and fallback chains, see [Features](features.md).
+16 built-in agents (15 static in `agentSources` plus Oracle built dynamically, see `src/agents/builtin-agents.ts`; names in `BuiltinAgentNameSchema`, `src/config/schema/agent-names.ts`) plus Mouse, the dynamic category-spawned worker. For delegation flows, see [Orchestration](orchestration.md). For hook details, see [Hooks](hooks.md). For the complete agent table with models and fallback chains, see [Features](features.md).
 
 ---
 
@@ -45,9 +45,11 @@ Meet the main agent: **Morpheus** (`opencode/kimi-k2.5-free`). Everything below 
 | **Mouse** | Category-spawned task executor (delegated worker) | `opencode/qwen3.6-plus-free` |
 | **Sati** | Frontend specialist (components, a11y, perf, testing) | `opencode/qwen3.6-plus-free` |
 | **Sentinel** | Security auditor | `opencode/qwen3.6-plus-free` |
+| **Cyclopt** | Code-quality and static-analysis reports via the Cyclopt platform (report-only; needs a Cyclopt token, see [Configurations](configurations.md#cyclopt)) | Claude Sonnet 4.6 |
+| **Tank** | Regression validation: runs build and tests, writes targeted tests, returns 
 | **BDD Contract** | BDD contract authoring | `opencode/qwen3.6-plus-free` |
 
-The 14 names above match `BuiltinAgentNameSchema` in `src/config/schema/agent-names.ts`. Thirteen are registered statically in `agentSources` (`src/agents/builtin-agents.ts`); Oracle is built dynamically by `buildOracleAgentConfig()`. Mouse is the dynamic category-spawned worker used when `task()` is called with a `category` (see below and [Orchestration](orchestration.md)). Default models and fallback chains live in `src/shared/model-requirements.ts`.
+The 16 names above match `BuiltinAgentNameSchema` in `src/config/schema/agent-names.ts`. Fifteen are registered statically in `agentSources` (`src/agents/builtin-agents.ts`); Oracle is built dynamically by `buildOracleAgentConfig()`. Mouse is the dynamic category-spawned worker used when `task()` is called with a `category` (see below and [Orchestration](orchestration.md)). Default models and fallback chains live in `src/shared/model-requirements.ts`.
 
 ### Built-in Capabilities
 
@@ -347,6 +349,34 @@ The 14-agent roster maps to **distinct cognitive functions** in software develop
 
 - **Smith** (plan reviewer, `opencode/glm-5-free`): Approval-biased validator. Outputs [OKAY] or [REJECT] — no "looks good but..." cop-outs.
 - **Sentinel** (security auditor, `opencode/qwen3.6-plus-free`): Read-only, 9 security skills (`security-core`, `security-secrets`, `security-sast`, `security-dast`, `security-dependencies`, `security-api`, `security-crypto`, `security-infra`, `security-review`, verified in `src/agents/sentinel.ts`). Security needs dedicated attention, not an afterthought.
+
+### Tank — Regression Validator
+
+**Tank** runs after code or dependency changes and decides whether anything broke. It is a `subagent`, called via `task(subagent_type="tank", ...)`. It does **not** fix vulnerabilities and does **not** scan for them.
+
+1. Reads the change summary in its prompt (package, old and new version, changed files, vulnerability description).
+2. Detects the project's package manager, `build`/`test`/`lint` scripts and test framework.
+3. Runs the build and the existing test suite, recording exact commands and exit codes.
+4. Writes small **targeted** tests around the changed files and the usage sites of the updated package, in the project's own framework and conventions. With no test framework it installs none and validates with the build, a type-check and an inline smoke check.
+5. Runs the new tests with the existing suite, classifies each failure as `REGRESSION`, `PRE-EXISTING`, `ENVIRONMENTAL` or `UNVERIFIED`, and reports.
+
+Its final message starts with a single `VERDICT: PASS` or `VERDICT: FAIL` line, followed by commands run, tests added, failures with cause and class, and a suggested fix per regression. The caller can continue the same session via the returned `session_id` to re-validate after fixing.
+
+The rules are enforced by OpenCode permissions, not just the prompt (`src/agents/tank/permissions.ts`):
+
+| Area | Rule |
+|------|------|
+| `edit` / `write` | Test files only (`*.test.*`, `*.spec.*`, `__tests__/`, `test/`, `tests/`). Never `node_modules`, `package.json` or lockfiles. |
+| `bash` | Allowed for build and tests. Blocked: `npm/yarn/pnpm audit`, dependency add/remove/update/install (frozen-lockfile installs and `npm ci` stay allowed), publish/push, destructive git, in-place rewrites (`sed -i`, `--fix`, `--write`). |
+| Hidden | `task` (no sub-delegation), `question`, and every `cyclopt_*` tool. |
+
+Bash redirection can still write files; the prompt forbids it and the path rules cover the editor tools.
+
+Set its model with `agents.tank.model`:
+
+```jsonc
+{ "agents": { "tank": { "model": "anthropic/claude-sonnet-4-6" } } }
+```
 
 ### The Specialist Layer (3 agents)
 

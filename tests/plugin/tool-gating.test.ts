@@ -7,6 +7,7 @@ import {
   directoryHasMatch,
   isConstructAgentEnabled,
   shouldEnableBddTools,
+  shouldEnableEvolutionTool,
   shouldEnableKnowledgeHubConfirm,
   shouldEnableLookAt,
   shouldEnablePdfFigures,
@@ -365,13 +366,13 @@ describe("tool-gating", () => {
     })
   })
 
-  describe("shouldEnableSessionCleanup", () => {
-    test("defaults to false when override is undefined", () => {
+  describe("shouldEnableEvolutionTool", () => {
+    test("defaults to false when enabled is undefined", () => {
       //#given
-      const override = undefined
+      const enabled = undefined
 
       //#when
-      const result = shouldEnableSessionCleanup(override)
+      const result = shouldEnableEvolutionTool(enabled)
 
       //#then
       expect(result).toBe(false)
@@ -379,10 +380,10 @@ describe("tool-gating", () => {
 
     test("registers when explicitly enabled", () => {
       //#given
-      const override = true
+      const enabled = true
 
       //#when
-      const result = shouldEnableSessionCleanup(override)
+      const result = shouldEnableEvolutionTool(enabled)
 
       //#then
       expect(result).toBe(true)
@@ -390,10 +391,10 @@ describe("tool-gating", () => {
 
     test("skips when explicitly disabled", () => {
       //#given
-      const override = false
+      const enabled = false
 
       //#when
-      const result = shouldEnableSessionCleanup(override)
+      const result = shouldEnableEvolutionTool(enabled)
 
       //#then
       expect(result).toBe(false)

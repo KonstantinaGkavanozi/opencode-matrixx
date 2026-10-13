@@ -1,5 +1,6 @@
 import { z } from "zod"
 import { AgentPermissionSchema } from "./internal/permission"
+import { PermissionsConfigSchema } from "./v2-permissions"
 
 export const AgentOverrideConfigSchema = z.object({
   /** @deprecated Use `category` instead. Model is inherited from category defaults. */
@@ -46,6 +47,8 @@ export const AgentOverrideConfigSchema = z.object({
       variant: z.string().optional(),
     })
   ).optional(),
+  system: z.string().optional(),
+  permissions: PermissionsConfigSchema.optional(),
 })
 
 export const AgentOverridesSchema = z.object({
@@ -67,9 +70,9 @@ export const AgentOverridesSchema = z.object({
   cipher: AgentOverrideConfigSchema.optional(),
   sentinel: AgentOverrideConfigSchema.optional(),
   cyclopt: AgentOverrideConfigSchema.optional(),
+  tank: AgentOverrideConfigSchema.optional(),
   sati: AgentOverrideConfigSchema.optional(),
   neo: AgentOverrideConfigSchema.optional(),
-  tank: AgentOverrideConfigSchema.optional(),
 })
 
 export type AgentOverrideConfig = z.infer<typeof AgentOverrideConfigSchema>

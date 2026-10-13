@@ -6,7 +6,8 @@
   "types": "dist/index.d.ts",
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "server.js"
   ],
   "bin": {
     "opencode-matrixx": "dist/cli.js",
@@ -17,6 +18,10 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
+    "./server": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
     "./schema.json": "./dist/matrixx.schema.json",
     "./tools": {
       "types": "./dist/tool-entry.d.ts",
@@ -24,10 +29,9 @@
     }
   },
   "scripts": {
-    "build": "bun run build:plugin && bun run build:tools && bun run build:cli && tsc --emitDeclarationOnly && bun run build:schema && bun run build:terminal",
-    "build:plugin": "bun build src/index.ts --outdir dist --target bun --format esm --external @ast-grep/napi --external \"opencode/*\" --external \"@opencode-ai/core/*\" --external effect --external \"effect/*\"",
-    "build:tools": "bun build src/tool-entry.ts --outfile dist/tools.js --target bun --format esm --external @ast-grep/napi --external \"opencode/*\" --external \"@opencode-ai/core/*\" --external effect --external \"effect/*\"",
-    "build:cli": "bun build src/cli/index.ts --outfile dist/cli.js --target bun --format esm && bun -e \"import { chmodSync } from 'node:fs'; chmodSync('dist/cli.js', 0o755)\"",
+    "build": "bun run build:plugin && bun run build:cli && tsc --emitDeclarationOnly && bun run build:schema",
+    "build:plugin": "bun build src/index.ts --outdir dist --target bun --format esm --external @ast-grep/napi --external \"opencode/*\" --external \"@opencode-ai/core/*\" --external \"@opencode/*\" --external effect --external \"effect/*\"",
+    "build:cli": "bun build src/cli/index.ts --outfile dist/cli.js --target bun --format esm && bun run script/make-executable.ts dist/cli.js",
     "build:schema": "bun run script/build-schema.ts",
     "build:terminal": "bun run script/build-terminal-viewer.ts",
     "clean": "rm -rf dist",
@@ -80,6 +84,9 @@
     "@xterm/addon-fit": "0.11.0",
     "@xterm/headless": "6.0.0",
     "@xterm/xterm": "6.0.0",
+    "@opencode/client": "2.0.16",
+    "@opencode/plugin": "2.0.16",
+    "@opencode/sdk": "2.0.16",
     "js-yaml": "^4.1.1",
     "jsonc-parser": "^3.3.1",
     "picomatch": "^4.0.2",

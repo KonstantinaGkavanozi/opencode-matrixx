@@ -16,12 +16,12 @@ export const AGENT_DISPLAY_NAMES: Record<string, string> = {
   operator: "operator",
   sentinel: "Sentinel (Security Auditor)",
   cyclopt: "Cyclopt (Code Quality Analyst)",
+  tank: "Tank (Regression Validator)",
   sati: "Sati (Frontend Specialist)",
   trinity: "trinity",
   construct: "construct",
   cipher: "Cipher (DSL Expert)",
   neo: "Neo",
-  tank: "Tank",
 }
 
 /**

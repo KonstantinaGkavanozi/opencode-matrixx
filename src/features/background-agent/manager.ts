@@ -1,8 +1,8 @@
 
 
-import type { PluginInput } from "@opencode-ai/plugin"
 import type { BackgroundTaskConfig, DcpHandoffCompression, MatrixxConfig, TmuxConfig } from "../../config/schema"
 import { getBackgroundStaleAfterMs } from "../../hooks/task-continuation-enforcer/staleness"
+import type { PluginContext } from "../../plugin/types"
 import { getAgentToolRestrictions, log, normalizeSDKResponse, promptWithModelSuggestionRetry } from "../../shared"
 import { hasPendingQuestionMessage } from "../../shared/awaiting-user"
 import { delay } from "../../shared/delay"
@@ -45,6 +45,7 @@ import {
 import { buildCompletionNotification, resolveAgentAndModel } from "./notification-builder"
 import { type ReconcileOutcome, reconcileHandle } from "./reconcile"
 import { classifyRevivable, findRevivableHandle, type ReviveBlockReason, toReviveTask } from "./revive"
+import { buildSubagentSessionCreate, type SessionOps, type V1CreateArgs } from "./session-ops"
 import { validateSessionHasOutput as validateSessionOutput } from "./session-output"
 import { TaskHistory } from "./task-history"
 import type {
@@ -54,12 +55,13 @@ import type {
   ResumeInput,
   ReviveInput,
 } from "./types"
+import { createV1SessionOps } from "./v1-session-ops"
 import { isWakeSchedulerEnabled, resolveWakeIntervalMs, shouldWakeForParent, WAKE_REMINDER_TEXT, WakeScheduler } from "./wake-scheduler"
 import { WallclockSupervisor } from "./wallclock"
 
 type ProcessCleanupEvent = NodeJS.Signals | "beforeExit" | "exit"
 
-type OpencodeClient = PluginInput["client"]
+type OpencodeClient = PluginContext["client"]
 
 /**
  * Bounded wait for a nested admit to grab the reserved slot in "reserve" mode.
@@ -166,18 +168,21 @@ export class BackgroundManager {
   /** Grace timers pending a terminal wall-clock mark, keyed by task id. */
   private wallclockGraceTimers = new Map<string, ReturnType<typeof setTimeout>>()
   readonly taskHistory = new TaskHistory()
+  private sessionOps: SessionOps
 
   constructor(
-    ctx: PluginInput,
+    ctx: PluginContext,
     config?: BackgroundTaskConfig,
     options?: {
       tmuxConfig?: TmuxConfig
+      /** Full plugin config — the only source of the `tasks.*` store location. */
+      pluginConfig?: Partial<MatrixxConfig>
       onSubagentSessionCreated?: OnSubagentSessionCreated
       onShutdown?: () => void
       enableParentSessionNotifications?: boolean
       handoffCompression?: DcpHandoffCompression
-      /** Full plugin config — supplies `tasks.*` (store location, stale window) to the gates. */
-      pluginConfig?: Partial<MatrixxConfig>
+      /** Delegation session port. Defaults to the V1 `session.create` path. */
+      sessionOps?: SessionOps
     }
   ) {
     this.tasks = new Map()
@@ -193,6 +198,12 @@ export class BackgroundManager {
     this.onShutdown = options?.onShutdown
     this.enableParentSessionNotifications = options?.enableParentSessionNotifications ?? true
     this.handoffCompression = options?.handoffCompression
+    this.sessionOps =
+      options?.sessionOps ??
+      createV1SessionOps(async (args: V1CreateArgs) => {
+        const result = await this.client.session.create(args)
+        return { data: result.data, error: result.error }
+      })
     this.registerProcessCleanup()
   }
 
@@ -641,25 +652,20 @@ export class BackgroundManager {
     const parentDirectory = parentSession?.data?.directory ?? this.directory
     log(`[background-agent] Parent dir: ${parentSession?.data?.directory}, using: ${parentDirectory}`)
 
-    const createResult = await this.client.session.create({
-      body: {
-        parentID: input.parentSessionID,
-        title: `${input.description} (@${input.agent} subagent)`,
-      },
-      query: {
+    const createResult = await this.sessionOps.create(
+      buildSubagentSessionCreate({
+        description: input.description,
+        agent: input.agent,
+        parentSessionID: input.parentSessionID,
         directory: parentDirectory,
-      },
-    })
+      })
+    )
 
-    if (createResult.error) {
-      throw new Error(`Failed to create background session: ${createResult.error}`)
+    if (!createResult.ok) {
+      throw new Error(createResult.error)
     }
 
-    if (!createResult.data?.id) {
-      throw new Error("Failed to create background session: API returned no session ID")
-    }
-
-    const sessionID = createResult.data.id
+    const sessionID = createResult.sessionID
     registerSubagentSession(sessionID, input.parentSessionID)
 
     log("[background-agent] tmux callback check", {

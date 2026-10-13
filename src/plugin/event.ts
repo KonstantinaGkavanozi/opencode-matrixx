@@ -106,6 +106,9 @@ export function createEventHandler(args: {
       }
 
       firstMessageVariantGate.markSessionCreated(sessionInfo)
+      if (sessionInfo?.id) {
+        await managers.terminalPresentation?.created({ id: sessionInfo.id, parentID: sessionInfo.parentID, title: sessionInfo.title })
+      }
 
       await managers.tmuxSessionManager.onSessionCreated(
         event as {
@@ -124,6 +127,7 @@ export function createEventHandler(args: {
       }
 
       if (sessionInfo?.id) {
+        await managers.terminalPresentation?.deleted(sessionInfo.id)
         clearSessionAgent(sessionInfo.id)
         resetMessageCursor(sessionInfo.id)
         invalidateSdkMessageCache(sessionInfo.id)
