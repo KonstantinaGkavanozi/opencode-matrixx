@@ -1,8 +1,7 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs"
 import { join } from "node:path"
-
-import type { PluginContext } from "../../plugin/types"
 import type { MatrixxConfig } from "../../config/schema"
+import type { PluginContext } from "../../plugin/types"
 import {
   ADHOC_BUCKET,
   MATRIXX_DIR_NAME,
